@@ -1,0 +1,26 @@
+{
+	"name": "Canvox",
+	"description": "Canvox is an accessibility tool for blind and the visually impaired students to help navigate the instruction software Canvas.",
+	"version": "1.0",
+	"manifest_version": 3,
+	"icons": {
+		"16": "images/icons/icon16.png",
+		"48": "images/icons/icon48.png",
+		"128": "images/icons/icon128.png"
+	},
+	"action": {
+		"default_popup": "popup/popup.html",
+		"default_title": "Canvox\n An accessibility tool for blind and the visually impaired students"
+	},
+	"content-scripts": [
+		{
+			"js": ["scripts/content.js"],
+			"matches": ["https://unt.instructure.com/*"]
+		}
+	],
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
+	"permissions": ["storage", "activeTab", "scripting"]
+}
