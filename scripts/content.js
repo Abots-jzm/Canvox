@@ -16,11 +16,10 @@
 			transcript += event.results[i][0].transcript;
 		}
 		speechDisplay.textContent = transcript;
+		window.openCourse(transcript);
 	};
 
-	// Handle keypress 'm'
 	document.addEventListener("keydown", (e) => {
-		// Using key property, ensure it's lowercase 'm'
 		if (e.key.toLowerCase() === "m") {
 			if (isRecognizing) {
 				recognition.stop();
