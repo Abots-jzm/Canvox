@@ -14,7 +14,7 @@
 	},
 	"content_scripts": [
 		{
-			"js": ["scripts/injectElements.js", "scripts/content.js"],
+			"js": ["scripts/injectElements.js", "scripts/content.js", "scripts/dashboard.js"],
 			"matches": ["https://*.instructure.com/*"]
 		}
 	],
