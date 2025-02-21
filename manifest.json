@@ -12,10 +12,10 @@
 		"default_popup": "popup/popup.html",
 		"default_title": "Canvox\n An accessibility tool for blind and the visually impaired students"
 	},
-	"content-scripts": [
+	"content_scripts": [
 		{
 			"js": ["scripts/content.js"],
-			"matches": ["https://unt.instructure.com/*"]
+			"matches": ["https://*.instructure.com/*"]
 		}
 	],
 	"background": {
