@@ -16,7 +16,17 @@
 			transcript += event.results[i][0].transcript;
 		}
 		speechDisplay.textContent = transcript;
-		window.openCourse(transcript);
+
+		clearTimeout(window.debounceTimer);
+		window.debounceTimer = setTimeout(() => {
+			const wasASidebarAction = window.sidebarActionsRouter(transcript);
+			if (wasASidebarAction) return;
+
+			//dashboard
+			if (/^https?:\/\/(?:[^/]+\.)?instructure\.com\/$/i.test(window.location.href)) {
+				window.dashboardActionsRouter(transcript);
+			}
+		}, 1000);
 	};
 
 	document.addEventListener("keydown", (e) => {
