@@ -16,7 +16,7 @@ function injectElements() {
 		fontSize: "14px",
 		fontWeight: "bold",
 	});
-	header.textContent = "Transcript (will remove later)";
+	header.textContent = "Transcript (might remove later)";
 
 	const speechDisplay = document.createElement("div");
 	speechDisplay.id = "speech-display";
