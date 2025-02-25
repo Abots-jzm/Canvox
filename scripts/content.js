@@ -19,13 +19,7 @@
 
 		clearTimeout(window.debounceTimer);
 		window.debounceTimer = setTimeout(() => {
-			const wasASidebarAction = window.sidebarActionsRouter(transcript);
-			if (wasASidebarAction) return;
-
-			//dashboard
-			if (/^https?:\/\/(?:[^/]+\.)?instructure\.com\/$/i.test(window.location.href)) {
-				window.dashboardActionsRouter(transcript);
-			}
+			inputAction(transcript);
 		}, 1000);
 	};
 
@@ -41,6 +35,12 @@
 		}
 	});
 
+	document.querySelector(".voice-input").addEventListener("keydown", (e) => {
+		if (e.key === "Enter") {
+			inputAction(e.target.value);
+		}
+	});
+
 	recognition.onend = () => {
 		isRecognizing = false;
 	};
@@ -48,3 +48,13 @@
 		isRecognizing = false;
 	};
 })();
+
+function inputAction(transcript) {
+	const wasASidebarAction = window.sidebarActionsRouter(transcript);
+	if (wasASidebarAction) return;
+
+	//dashboard
+	if (/^https?:\/\/(?:[^/]+\.)?instructure\.com\/$/i.test(window.location.href)) {
+		window.dashboardActionsRouter(transcript);
+	}
+}
