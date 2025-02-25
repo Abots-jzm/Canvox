@@ -13,6 +13,8 @@ function sidebarActionsRouter(transcript) {
 			window.location.href = `${window.location.origin}/groups`;
 		} else if (sideBarMenu === "inbox") {
 			window.location.href = `${window.location.origin}/conversations`;
+		} else {
+			wasASidebarAction = false;
 		}
 	} else if (transcript.includes("go home")) {
 		window.location.href = window.location.origin;

@@ -27,8 +27,12 @@ function injectElements() {
 	});
 	speechDisplay.textContent = "";
 
+	const textInput = document.createElement("input");
+	textInput.className = "voice-input";
+
 	speechContainer.appendChild(header);
 	speechContainer.appendChild(speechDisplay);
+	speechContainer.appendChild(textInput);
 	document.body.appendChild(speechContainer);
 
 	return { speechDisplay };
