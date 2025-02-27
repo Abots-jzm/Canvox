@@ -71,4 +71,32 @@ function openInbox() {
 	document.getElementById("global_nav_conversations_link").click();
 }
 
+// View groups on the side bar
+function openGroup(groupName) {
+
+	// Click on the "Groups" tab on the side bar
+	document.getElementById("global_nav_groups_link").click();
+
+	// setTimeout(function, delay) calls a function after a specified delay
+	// The delay is in milliseconds
+	setTimeout(() => {
+	
+		// Assign all elements with class name "css-uuhc4b-view-link" into a variable groupLinks
+		const groupLinks = document.querySelectorAll(".css-uuhc4b-view-link");
+
+		// Loop through each group link
+		for (const link of groupLinks) {
+
+			// Check if the group name is included in the link text
+			if (link.textContent.toLowerCase().includes(groupName)) {
+
+				// Click on the link
+				link.click();
+
+				break;
+			}
+		}
+	}, 500);	// Adjust the timeout as needed for menu to open
+}
+
 window.dashboardActionsRouter = dashboardActionsRouter;
