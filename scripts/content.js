@@ -19,12 +19,12 @@
 
 		clearTimeout(window.debounceTimer);
 		window.debounceTimer = setTimeout(() => {
-			inputAction(transcript);
+			window.actions(transcript);
 		}, 1000);
 	};
 
 	document.addEventListener("keydown", (e) => {
-		if (e.key.toLowerCase() === "m") {
+		if (e.key.toLowerCase() === "x") {
 			if (isRecognizing) {
 				recognition.stop();
 				isRecognizing = false;
@@ -37,7 +37,7 @@
 
 	document.querySelector(".voice-input").addEventListener("keydown", (e) => {
 		if (e.key === "Enter") {
-			inputAction(e.target.value);
+			window.actions(e.target.value);
 		}
 	});
 
@@ -48,13 +48,3 @@
 		isRecognizing = false;
 	};
 })();
-
-function inputAction(transcript) {
-	const wasASidebarAction = window.sidebarActionsRouter(transcript);
-	if (wasASidebarAction) return;
-
-	//dashboard
-	if (/^https?:\/\/(?:[^/]+\.)?instructure\.com\/$/i.test(window.location.href)) {
-		window.dashboardActionsRouter(transcript);
-	}
-}
