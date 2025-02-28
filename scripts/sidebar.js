@@ -1,24 +1,26 @@
-function sidebarActionsRouter(transcript) {
+function sidebarActionsRouter(destination) {
 	let wasASidebarAction = true;
 
-	if (transcript.includes("open")) {
-		const sideBarMenu = transcript.split("open ")[1].trim().toLowerCase();
-		if (sideBarMenu === "dashboard") {
+	destination = destination.trim().toLowerCase();
+
+	if (destination === "dashboard") {
+		window.location.href = window.location.origin;
+	} else if (destination === "calendar") {
+		window.location.href = `${window.location.origin}/calendar`;
+	} else if (destination === "courses") {
+		window.location.href = window.location.origin;
+	} else if (destination === "groups") {
+		window.location.href = `${window.location.origin}/groups`;
+	} else if (destination === "inbox") {
+		window.location.href = `${window.location.origin}/conversations`;
+	} else if (destination === "home") {
+		// Only navigate to home if we're not in a courses page
+		if (!window.location.pathname.includes("/courses/")) {
 			window.location.href = window.location.origin;
-		} else if (sideBarMenu === "calendar") {
-			window.location.href = `${window.location.origin}/calendar`;
-		} else if (sideBarMenu === "courses") {
-			window.location.href = `${window.location.origin}/courses`;
-		} else if (sideBarMenu === "groups") {
-			window.location.href = `${window.location.origin}/groups`;
-		} else if (sideBarMenu === "inbox") {
-			window.location.href = `${window.location.origin}/conversations`;
 		} else {
 			wasASidebarAction = false;
 		}
-	} else if (transcript.includes("go home")) {
-		window.location.href = window.location.origin;
-	} else if (transcript.includes("back") && transcript.endsWith("back")) {
+	} else if (destination === "back") {
 		window.history.back();
 	} else {
 		wasASidebarAction = false;
