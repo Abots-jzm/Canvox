@@ -5,13 +5,15 @@ function actions(transcript) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
 
-		navigate(destination);
+		navigate(destination, transcript);
 	}
 }
 
 function extractDestination(transcript) {
 	// The following code makes tries to do as much as possible locally before falling back to the chatgpt server.
+	// RegEx = Regular Expression, test here https://regex101.com/ 
 
+	// The section recognizes words or phrases and assigns to a command/variable
 	// Pattern 1: Direct commands - "go to X", "open X", etc.
 	const directCommands =
 		/(?:go(?:\s+to)?|open|show(?:\s+me)?|navigate\s+to|take\s+me\s+to|view|access|display)(?:\s+my)?\s+([a-z0-9\s]+)/i;
@@ -33,6 +35,7 @@ function extractDestination(transcript) {
 	let match;
 	let destination;
 
+	// Assigns an action to an according 
 	if ((match = contextNavigation.exec(transcript))) {
 		destination = match[1];
 	} else if ((match = clickPressActions.exec(transcript))) {
@@ -47,11 +50,16 @@ function extractDestination(transcript) {
 		destination = match[1];
 	}
 
+	// If there was a RegEx match,
 	// remove words like "please", "pls", "plz".
-	destination = destination
-		.replace(/please|pls|plz/gi, "")
-		.trim()
-		.toLowerCase();
+	if (destination) {
+		destination = destination
+			.replace(/please|pls|plz/gi, "")
+			.trim()
+			.toLowerCase();
+	}
+
+	console.log(destination);
 
 	return destination;
 }
