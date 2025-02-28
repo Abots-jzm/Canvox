@@ -57,6 +57,10 @@ function extractDestination(transcript) {
 			.replace(/please|pls|plz/gi, "")
 			.trim()
 			.toLowerCase();
+	} else {
+		// If the RegEx fails to match,
+		// we can fallback to a GPT check
+		
 	}
 
 	console.log(destination);
