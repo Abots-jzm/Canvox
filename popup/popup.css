@@ -1,3 +1,134 @@
 body {
 	width: 300px;
+	height: 261px;
+	background-color: black;
+	color: white;
+
 }
+
+.light-mode{
+	background-color: white;
+	color: black;
+}
+
+
+select{
+	width: 100px;
+	font-size: 12px;
+	border-radius: 5px;
+}
+
+
+.button-style {
+	display: flex;             /* Enable flexbox */
+	justify-content: center;   /* Center text horizontally */
+	align-items: center;       /* Center text vertically */
+	width: 15px;               /* Set the width to 10px */
+	height: 15px;              /* Set the height to 10px */
+	padding: 0;                /* Remove any default padding */
+	font-size: 8px;            /* Set the font size small enough to fit */
+	text-align: center;        /* Center text (optional for older browsers) */
+	border: 1px solid black;   /* Optional: Border for visibility */
+	overflow: hidden;
+	cursor: pointer;
+	background: none;
+	
+}
+
+.container{
+
+}
+
+.top-bar{
+	display: flex;
+	align-items: center;
+	/* border: 1px solid white; */
+}
+
+.logo-image{
+	cursor: default;
+	margin-right: auto;
+	/* border: 1px solid white; */
+
+}
+
+.control-buttons{
+	display: flex;
+	margin-left: auto;
+	/* border: 1px solid white; */
+
+}
+
+.middle-bar{
+	/* border: 1px solid white; */
+	display: flex;
+	align-items: center;
+	margin-top: 25px;
+
+}
+.checkbox{
+	display: flex;
+	/* border: 1px solid white; */
+	margin-right: 57px;
+	margin-left: 18px;
+
+}
+
+.audioInput{
+	display: flex;
+	flex-direction: column;
+	/* border: 1px solid white; */
+}
+
+.third-bar{
+	display: flex;
+	align-items: center;
+	/* border: 1px solid white; */
+	margin-top: 40px;
+
+}
+
+
+.volumeSlider{
+	display: flex;
+	flex-direction: column;
+	/* border: 1px solid white; */
+	margin-right: 50px;
+	margin-left: 18px;
+
+}
+
+.audioOutput{
+	display: flex;
+	flex-direction: column;
+	/* border: 1px solid white; */
+}
+
+
+.bottom-bar{
+	display: flex;
+	justify-content: center;
+	/* border: 1px solid white; */
+	margin-top: 35px;
+	
+
+}
+
+.theme-toggle{
+	cursor: pointer;
+	/* border: 1px solid white; */
+	background: none;
+	color: white;
+	border: none;
+}
+
+.button-light-mode{
+	cursor: pointer;
+	/* border: 1px solid white; */
+	background: none;
+	color: black;
+	border: none;
+}
+
+
+
