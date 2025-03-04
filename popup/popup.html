@@ -49,7 +49,6 @@
 							<label for="audioInput">Audio Input</label>
 							<select name="audioIn" id="audioInput">
 								<option value="lol">system default</option>
-								<option value="lmao">lol</option>
 							</select>
 						</div>
 					</form>
@@ -74,7 +73,6 @@
 							<label for="audioOutput">Audio Output</label>
 							<select name="audioOut" id="audioOutput">
 								<option value="lol">system default</option>
-								<option value="lmao">lol</option>
 							</select>
 						</div>
 					</form>
@@ -84,8 +82,32 @@
 
 			<div class="bottom-bar">
 				<div>
-					<button class="hotkeys">Change hotkeys</button>
+					<button id="change-hotkeys">Change hotkeys</button>
 				</div>
+
+			
+				<div id="hotkey-settings">
+					<h3>Hotkeys</h3>
+					
+					<div>Enable Microphone</div>
+					<input type="text" id="hotkey-microphone">
+					<button id="save-microphone">set</button>
+
+					<div>Show transcript</div>
+					<input type="text" id="hotkey-transcript">
+					<button id="save-transcript">set</button>
+
+					<div>Readout volume down</div>
+					<input type="text" id="hotkey-readoutdown">
+					<button id="save-readoutdown">set</button>
+
+					<div>Readout volume up</div>
+					<input type="text" id="hotkey-readoutup">
+					<button id="save-readoutup">set</button>
+					
+					<button id="close-settings">Close</button>
+				</div>
+
 				<div>
 					<button class="theme-toggle">light mode</button>
 				</div>
