@@ -20,15 +20,15 @@ select{
 
 
 .button-style {
-	display: flex;             /* Enable flexbox */
-	justify-content: center;   /* Center text horizontally */
-	align-items: center;       /* Center text vertically */
-	width: 15px;               /* Set the width to 10px */
-	height: 15px;              /* Set the height to 10px */
-	padding: 0;                /* Remove any default padding */
-	font-size: 8px;            /* Set the font size small enough to fit */
-	text-align: center;        /* Center text (optional for older browsers) */
-	border: 1px solid black;   /* Optional: Border for visibility */
+	display: flex;          
+	justify-content: center; 
+	align-items: center;     
+	width: 15px;             
+	height: 15px;             
+	padding: 0;               
+	font-size: 8px;            
+	text-align: center;       
+	border: 1px solid black;   
 	overflow: hidden;
 	cursor: pointer;
 	background: none;
@@ -112,7 +112,7 @@ select{
 
 }
 
-.theme-toggle{
+.theme-toggle, .transcript, .hotkeys {
 	cursor: pointer;
 	/* border: 1px solid white; */
 	background: none;
@@ -127,6 +127,3 @@ select{
 	color: black;
 	border: none;
 }
-
-
-
