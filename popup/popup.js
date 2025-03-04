@@ -9,21 +9,45 @@ function themetoggle(){
     transcriptButton.classList.toggle("button-light-mode");
     hotkeyButton.classList.toggle("button-light-mode");
 
-    if (document.body.classList.contains("light-mode")){
-        localStorage.setItem("theme", "light");
-    }
-    else{
-        localStorage.setItem("theme", "dark");
-    }
+    const currentTheme = document.body.classList.contains("light-mode") ? "light" : "dark";
+    chrome.storage.sync.set({ theme: currentTheme }, () => {
+        console.log("Theme saved:", currentTheme);
+    });
 
 }
+
 
 toggleButton.addEventListener("click", themetoggle);
 
 
-if(localStorage.getItem("theme")==="light"){
-    document.body.classList.add("light-mode");
-    toggleButton.classList.add("button-light-mode");
-    transcriptButton.classList.add('button-light-mode');
-    hotkeyButton.classList.add("button-light-mode");
-}
+chrome.storage.sync.get("theme", (data) => {
+    if (data.theme === "light") {
+        document.body.classList.add("light-mode");
+        toggleButton.classList.add("button-light-mode");
+        transcriptButton.classList.add("button-light-mode");
+        hotkeyButton.classList.add("button-light-mode");
+    }
+});
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const changeHotkeysBtn = document.getElementById("change-hotkeys");
+    const settingsPanel = document.getElementById("hotkey-settings");
+    const closeSettingsBtn = document.getElementById("close-settings");
+
+    if (!changeHotkeysBtn || !settingsPanel || !closeSettingsBtn) {
+        console.error("One or more elements not found.");
+        return;
+    }
+
+    // Show settings panel
+    changeHotkeysBtn.addEventListener("click", () => {
+        settingsPanel.style.display = "block";
+    });
+
+    // Hide settings panel
+    closeSettingsBtn.addEventListener("click", () => {
+        settingsPanel.style.display = "none";
+    });
+});
