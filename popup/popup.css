@@ -116,7 +116,7 @@ select{
 
 }
 
-.theme-toggle, .transcript, .hotkeys {
+.theme-toggle, .transcript, .change-hotkeys{
 	cursor: pointer;
 	/* border: 1px solid white; */
 	background: none;
@@ -132,7 +132,7 @@ select{
 	border: none;
 }
 
-#hotkey-settings{
+.hotkey-settings{
 	display: none;
 	position: fixed;
 	right: 10px;
@@ -147,13 +147,6 @@ select{
 }
 
 
-#change-hotkeys {
-	cursor: pointer;
-	/* border: 1px solid white; */
-	background: none;
-	color: white;
-	border: none;
 
-}
 
 

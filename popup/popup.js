@@ -1,7 +1,7 @@
 // TODO
 const toggleButton = document.querySelector(".theme-toggle");
 const transcriptButton = document.querySelector(".transcript");
-const hotkeyButton = document.querySelector(".hotkeys");
+const hotkeyButton = document.querySelector(".change-hotkeys");
 
 function themetoggle(){
     document.body.classList.toggle("light-mode");
@@ -32,8 +32,8 @@ chrome.storage.sync.get("theme", (data) => {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const changeHotkeysBtn = document.getElementById("change-hotkeys");
-    const settingsPanel = document.getElementById("hotkey-settings");
+    const changeHotkeysBtn = document.querySelector(".change-hotkeys");
+    const settingsPanel = document.querySelector(".hotkey-settings");
     const closeSettingsBtn = document.getElementById("close-settings");
 
     if (!changeHotkeysBtn || !settingsPanel || !closeSettingsBtn) {
