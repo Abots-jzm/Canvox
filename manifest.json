@@ -22,5 +22,5 @@
 		"service_worker": "background.js",
 		"type": "module"
 	},
-	"permissions": ["storage", "activeTab", "scripting", "webRequestAuthProvider", "tts"]
+	"permissions": ["storage", "activeTab", "scripting"]
 }
