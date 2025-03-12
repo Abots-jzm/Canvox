@@ -1,17 +1,18 @@
 function actions(transcript) {
 	const destination = extractDestination(transcript);
 	if (destination) {
-		console.log(destination);
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
 
-		navigate(destination);
+		navigate(destination, transcript);
 	}
 }
 
 function extractDestination(transcript) {
 	// The following code makes tries to do as much as possible locally before falling back to the chatgpt server.
+	// RegEx = Regular Expression, test here https://regex101.com/
 
+	// The section recognizes words or phrases and assigns to a command/variable
 	// Pattern 1: Direct commands - "go to X", "open X", etc.
 	const directCommands =
 		/(?:go(?:\s+to)?|open|show(?:\s+me)?|navigate\s+to|take\s+me\s+to|view|access|display)(?:\s+my)?\s+([a-z0-9\s]+?)(?:\s+course(?:s)?)?$/i;
@@ -33,6 +34,7 @@ function extractDestination(transcript) {
 	let match;
 	let destination;
 
+	// Assigns an action to an according
 	if ((match = contextNavigation.exec(transcript))) {
 		destination = match[1];
 	} else if ((match = clickPressActions.exec(transcript))) {
@@ -47,13 +49,51 @@ function extractDestination(transcript) {
 		destination = match[1];
 	}
 
+	// If there was a RegEx match,
 	// remove words like "please", "pls", "plz".
-	destination = destination
-		.replace(/please|pls|plz/gi, "")
-		.trim()
-		.toLowerCase();
-
+	if (destination) {
+		destination = destination
+			.replace(/please|pls|plz/gi, "")
+			.trim()
+			.toLowerCase();
+		if (possible_destinations.includes(destination)) {
+			return destination;
+		} else {
+			useGPT(destination);
+		}
+	} else {
+		useGPT(transcript);
+	}
 	return destination;
+}
+
+async function useGPT(transcript) {
+	// If the RegEx fails to match,
+	// we can fallback to a GPT check
+	try {
+		console.log("Calling API...");
+		const response = await fetch(
+			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
+			// Uncomment the line below, and comment the line above to test locally
+			// 'http://localhost:3000/api/gpt',
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ voice_input: transcript }),
+			}
+		);
+		const data = await response.json();
+		if (data && data.response) {
+			const destination = data.response.trim().toLowerCase();
+			// After getting the destination, trigger navigation
+			const wasASidebarAction = window.sidebarActionsRouter(destination);
+			if (!wasASidebarAction) {
+				navigate(destination, transcript);
+			}
+		}
+	} catch (error) {
+		console.error("Error calling API:", error);
+	}
 }
 
 function navigate(destination) {
