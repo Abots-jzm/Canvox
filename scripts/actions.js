@@ -1,10 +1,29 @@
+const POSSIBLE_SIDEBAR_DESTINATIONS = [
+	"home",
+	"dashboard",
+	"calendar",
+	"courses",
+	"classes",
+	"groups",
+	"inbox",
+	"messages",
+	"back",
+];
+
 function actions(transcript) {
 	const destination = extractDestination(transcript);
 	if (destination) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
 
-		navigate(destination, transcript);
+		const navigationSuccessful = navigate(destination, transcript);
+		if (!navigationSuccessful) {
+			// Only call useGPT if navigation failed
+			useGPT(transcript);
+		}
+	} else {
+		// No destination was found, use GPT to interpret
+		useGPT(transcript);
 	}
 }
 
@@ -56,15 +75,78 @@ function extractDestination(transcript) {
 			.replace(/please|pls|plz/gi, "")
 			.trim()
 			.toLowerCase();
-		if (possible_destinations.includes(destination)) {
-			return destination;
-		} else {
-			useGPT(destination);
-		}
-	} else {
-		useGPT(transcript);
 	}
 	return destination;
+}
+
+// Collects all unique link texts from the page, removing duplicates and substrings
+function collectUniqueDestinations() {
+	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
+	if (!layoutWrapper) return [];
+
+	// Exclude the right-side-wrapper and its children
+	const rightSideWrapper = layoutWrapper.querySelector("#right-side-wrapper");
+
+	// Get all links except those in the right-side-wrapper
+	const links = [];
+	const allLinks = layoutWrapper.querySelectorAll("a");
+
+	for (const link of allLinks) {
+		// Check if the link is a descendant of right-side-wrapper
+		if (rightSideWrapper && rightSideWrapper.contains(link)) {
+			continue; // Skip links inside right-side-wrapper
+		}
+		links.push(link);
+	}
+
+	// Collect all possible link texts
+	const allTexts = [];
+	for (const link of links) {
+		if (link.textContent.trim()) {
+			allTexts.push(link.textContent.trim().toLowerCase());
+		}
+		if (link.title && link.title.trim()) {
+			allTexts.push(link.title.trim().toLowerCase());
+		}
+
+		// Check children elements of the link
+		for (const child of link.children) {
+			if (child.textContent.trim()) {
+				allTexts.push(child.textContent.trim().toLowerCase());
+			}
+			if (child.title && child.title.trim()) {
+				allTexts.push(child.title.trim().toLowerCase());
+			}
+		}
+	}
+
+	// Remove duplicates first by using Set
+	const uniqueTexts = [...new Set(allTexts)];
+
+	// Remove substrings (if text is contained within another)
+	const filteredTexts = [];
+
+	for (let i = 0; i < uniqueTexts.length; i++) {
+		let isSubstring = false;
+		for (let j = 0; j < uniqueTexts.length; j++) {
+			// Skip self-comparison
+			if (i === j) continue;
+
+			// Check if uniqueTexts[i] is a substring of uniqueTexts[j]
+			if (uniqueTexts[j].includes(uniqueTexts[i]) && uniqueTexts[i].length < uniqueTexts[j].length) {
+				isSubstring = true;
+				break;
+			}
+		}
+
+		// Only add if not a substring of another element
+		if (!isSubstring && uniqueTexts[i].length > 2) {
+			// Ignore very short strings (likely not useful)
+			filteredTexts.push(uniqueTexts[i]);
+		}
+	}
+
+	return filteredTexts;
 }
 
 async function useGPT(transcript) {
@@ -72,6 +154,11 @@ async function useGPT(transcript) {
 	// we can fallback to a GPT check
 	try {
 		console.log("Calling API...");
+
+		// Collect possible destinations to help GPT make better decisions
+		const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...collectUniqueDestinations()];
+		console.log("Possible destinations:", possibleDestinations);
+
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
 			// Uncomment the line below, and comment the line above to test locally
@@ -79,10 +166,14 @@ async function useGPT(transcript) {
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ voice_input: transcript }),
+				body: JSON.stringify({
+					voice_input: transcript,
+					possible_destinations: possibleDestinations,
+				}),
 			}
 		);
 		const data = await response.json();
+		console.log("API response:", data);
 		if (data && data.response) {
 			const destination = data.response.trim().toLowerCase();
 			// After getting the destination, trigger navigation
@@ -108,7 +199,7 @@ function navigate(destination) {
 			(link.title && link.title.toLowerCase().includes(destination))
 		) {
 			link.click();
-			return;
+			return true;
 		}
 
 		for (const child of link.children) {
@@ -117,10 +208,11 @@ function navigate(destination) {
 				(child.title && child.title.toLowerCase().includes(destination))
 			) {
 				link.click();
-				return;
+				return true;
 			}
 		}
 	}
-}
 
-window.actions = actions;
+	// No matching link found
+	return false;
+}
