@@ -40,7 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("One or more elements not found.");
         return;
     }
+//Need for UI changes when hearing
 
+
+
+    
     // Show settings panel
     changeHotkeysBtn.addEventListener("click", () => {
         settingsPanel.style.display = "block";
