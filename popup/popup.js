@@ -2,6 +2,20 @@
 const toggleButton = document.querySelector(".theme-toggle");
 const transcriptButton = document.querySelector(".transcript");
 const hotkeyButton = document.querySelector(".change-hotkeys");
+const settingsPanel = document.querySelector(".hotkey-settings");
+const changeHotkeysBtn = document.querySelector(".change-hotkeys");
+const closeSettingsBtn = document.getElementById("close-settings");
+
+// Additional UI Elements
+const microphoneCheckbox = document.querySelector(".checkbox input");
+const volumeSlider = document.querySelector(".volumeSlider input");
+const audioInputSelect = document.querySelector(".audioInput select");
+const audioOutputSelect = document.querySelector(".audioOutput select");
+
+// Import the storage settings script
+import './storageSettings.js';
+
+toggleButton.addEventListener("click", themetoggle);
 
 function themetoggle(){
     document.body.classList.toggle("light-mode");
