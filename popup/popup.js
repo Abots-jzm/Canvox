@@ -15,7 +15,7 @@ function themetoggle(){
     });
 
 }
-
+{/*   toggle button funcitonlaiity*/}
 
 toggleButton.addEventListener("click", themetoggle);
 
