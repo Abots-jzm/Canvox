@@ -81,22 +81,47 @@ function extractDestination(transcript) {
 
 // Collects all unique link texts from the page, removing duplicates and substrings
 function collectUniqueDestinations() {
+
+	// Links on the main dashboard
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
-	if (!layoutWrapper) return [];
+
+	// Courses and Groups that are allocated dynamically (only accessed after clicking the sidebar button)
+	const navTrayPortal = document.querySelector("#nav-tray-portal");
+	
+	if (!layoutWrapper && !navTrayPortal) return [];
 
 	// Exclude the right-side-wrapper and its children
-	const rightSideWrapper = layoutWrapper.querySelector("#right-side-wrapper");
+	const rightSideWrapper = layoutWrapper ? layoutWrapper.querySelector("#right-side-wrapper") : null;
 
 	// Get all links except those in the right-side-wrapper
 	const links = [];
-	const allLinks = layoutWrapper.querySelectorAll("a");
-
-	for (const link of allLinks) {
-		// Check if the link is a descendant of right-side-wrapper
-		if (rightSideWrapper && rightSideWrapper.contains(link)) {
-			continue; // Skip links inside right-side-wrapper
+	
+	// Process links from the layout wrapper
+	if (layoutWrapper) {
+		const allLinks = layoutWrapper.querySelectorAll("a");
+		for (const link of allLinks) {
+			// Check if the link is a descendant of right-side-wrapper
+			if (rightSideWrapper && rightSideWrapper.contains(link)) {
+				continue; // Skip links inside right-side-wrapper
+			}
+			links.push(link);
 		}
-		links.push(link);
+	}
+	
+	// Also get links from the nav-tray-portal if it exists
+	if (navTrayPortal && navTrayPortal.getAttribute('aria-hidden') !== 'true') {
+		const navTrayLinks = navTrayPortal.querySelectorAll("a");
+		for (const link of navTrayLinks) {
+			links.push(link);
+		}
+		
+		// Additionally, collect text from other clickable elements in the tray
+		const clickableElements = navTrayPortal.querySelectorAll("[role='button'], button, [tabindex='0']");
+		for (const element of clickableElements) {
+			if (!element.closest("a")) { // Avoid duplicating elements that are inside links
+				links.push(element);
+			}
+		}
 	}
 
 	// Collect all possible link texts
@@ -173,13 +198,9 @@ async function useGPT(transcript) {
 			}
 		);
 		const data = await response.json();
+		console.log("API response:", data);
 		if (data && data.response) {
-			//trim and remove quotes at the start and end if there is any
-			const destination = data.response
-				.trim()
-				.replace(/^["']|["']$/g, "")
-				.toLowerCase();
-			console.log("Destination from GPT:", destination);
+			const destination = data.response.trim().toLowerCase();
 			// After getting the destination, trigger navigation
 			const wasASidebarAction = window.sidebarActionsRouter(destination);
 			if (!wasASidebarAction) {
