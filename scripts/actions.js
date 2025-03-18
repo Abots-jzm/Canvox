@@ -173,9 +173,13 @@ async function useGPT(transcript) {
 			}
 		);
 		const data = await response.json();
-		console.log("API response:", data);
 		if (data && data.response) {
-			const destination = data.response.trim().toLowerCase();
+			//trim and remove quotes at the start and end if there is any
+			const destination = data.response
+				.trim()
+				.replace(/^["']|["']$/g, "")
+				.toLowerCase();
+			console.log("Destination from GPT:", destination);
 			// After getting the destination, trigger navigation
 			const wasASidebarAction = window.sidebarActionsRouter(destination);
 			if (!wasASidebarAction) {
