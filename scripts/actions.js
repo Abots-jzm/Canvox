@@ -1,20 +1,40 @@
+const POSSIBLE_SIDEBAR_DESTINATIONS = [
+	"home",
+	"dashboard",
+	"calendar",
+	"courses",
+	"classes",
+	"groups",
+	"inbox",
+	"messages",
+	"back",
+];
+
 function actions(transcript) {
 	const destination = extractDestination(transcript);
 	if (destination) {
-		console.log(destination);
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
 
-		navigate(destination);
+		const navigationSuccessful = navigate(destination, transcript);
+		if (!navigationSuccessful) {
+			// Only call useGPT if navigation failed
+			useGPT(transcript);
+		}
+	} else {
+		// No destination was found, use GPT to interpret
+		useGPT(transcript);
 	}
 }
 
 function extractDestination(transcript) {
 	// The following code makes tries to do as much as possible locally before falling back to the chatgpt server.
+	// RegEx = Regular Expression, test here https://regex101.com/
 
+	// The section recognizes words or phrases and assigns to a command/variable
 	// Pattern 1: Direct commands - "go to X", "open X", etc.
 	const directCommands =
-		/(?:go(?:\s+to)?|open|show(?:\s+me)?|navigate\s+to|take\s+me\s+to|view|access|display)(?:\s+my)?\s+([a-z0-9\s]+)/i;
+		/(?:go(?:\s+to)?|open|show(?:\s+me)?|navigate\s+to|take\s+me\s+to|view|access|display)(?:\s+my)?\s+([a-z0-9\s]+?)(?:\s+course(?:s)?)?$/i;
 	// Pattern 2: Question forms - "where are my X?", etc.
 	const questionForms =
 		/(?:where\s+(?:are|is)(?:\s+my)?|can\s+I\s+see(?:\s+my)?|how\s+do\s+I\s+get\s+to(?:\s+my)?)\s+([a-z0-9\s]+)/i;
@@ -33,6 +53,7 @@ function extractDestination(transcript) {
 	let match;
 	let destination;
 
+	// Assigns an action to an according
 	if ((match = contextNavigation.exec(transcript))) {
 		destination = match[1];
 	} else if ((match = clickPressActions.exec(transcript))) {
@@ -47,13 +68,127 @@ function extractDestination(transcript) {
 		destination = match[1];
 	}
 
+	// If there was a RegEx match,
 	// remove words like "please", "pls", "plz".
-	destination = destination
-		.replace(/please|pls|plz/gi, "")
-		.trim()
-		.toLowerCase();
-
+	if (destination) {
+		destination = destination
+			.replace(/please|pls|plz/gi, "")
+			.trim()
+			.toLowerCase();
+	}
 	return destination;
+}
+
+// Collects all unique link texts from the page, removing duplicates and substrings
+function collectUniqueDestinations() {
+	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
+	if (!layoutWrapper) return [];
+
+	// Exclude the right-side-wrapper and its children
+	const rightSideWrapper = layoutWrapper.querySelector("#right-side-wrapper");
+
+	// Get all links except those in the right-side-wrapper
+	const links = [];
+	const allLinks = layoutWrapper.querySelectorAll("a");
+
+	for (const link of allLinks) {
+		// Check if the link is a descendant of right-side-wrapper
+		if (rightSideWrapper && rightSideWrapper.contains(link)) {
+			continue; // Skip links inside right-side-wrapper
+		}
+		links.push(link);
+	}
+
+	// Collect all possible link texts
+	const allTexts = [];
+	for (const link of links) {
+		if (link.textContent.trim()) {
+			allTexts.push(link.textContent.trim().toLowerCase());
+		}
+		if (link.title && link.title.trim()) {
+			allTexts.push(link.title.trim().toLowerCase());
+		}
+
+		// Check children elements of the link
+		for (const child of link.children) {
+			if (child.textContent.trim()) {
+				allTexts.push(child.textContent.trim().toLowerCase());
+			}
+			if (child.title && child.title.trim()) {
+				allTexts.push(child.title.trim().toLowerCase());
+			}
+		}
+	}
+
+	// Remove duplicates first by using Set
+	const uniqueTexts = [...new Set(allTexts)];
+
+	// Remove substrings (if text is contained within another)
+	const filteredTexts = [];
+
+	for (let i = 0; i < uniqueTexts.length; i++) {
+		let isSubstring = false;
+		for (let j = 0; j < uniqueTexts.length; j++) {
+			// Skip self-comparison
+			if (i === j) continue;
+
+			// Check if uniqueTexts[i] is a substring of uniqueTexts[j]
+			if (uniqueTexts[j].includes(uniqueTexts[i]) && uniqueTexts[i].length < uniqueTexts[j].length) {
+				isSubstring = true;
+				break;
+			}
+		}
+
+		// Only add if not a substring of another element
+		if (!isSubstring && uniqueTexts[i].length > 2) {
+			// Ignore very short strings (likely not useful)
+			filteredTexts.push(uniqueTexts[i]);
+		}
+	}
+
+	return filteredTexts;
+}
+
+async function useGPT(transcript) {
+	// If the RegEx fails to match,
+	// we can fallback to a GPT check
+	try {
+		console.log("Calling API...");
+
+		// Collect possible destinations to help GPT make better decisions
+		const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...collectUniqueDestinations()];
+		console.log("Possible destinations:", possibleDestinations);
+
+		const response = await fetch(
+			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
+			// Uncomment the line below, and comment the line above to test locally
+			// 'http://localhost:3000/api/gpt',
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					voice_input: transcript,
+					possible_destinations: possibleDestinations,
+				}),
+			}
+		);
+		const data = await response.json();
+		if (data && data.response) {
+			//trim and remove quotes at the start and end if there is any
+			const destination = data.response
+				.trim()
+				.replace(/^["']|["']$/g, "")
+				.toLowerCase();
+			console.log("Destination from GPT:", destination);
+			// After getting the destination, trigger navigation
+			const wasASidebarAction = window.sidebarActionsRouter(destination);
+			if (!wasASidebarAction) {
+				navigate(destination, transcript);
+			}
+		}
+	} catch (error) {
+		console.error("Error calling API:", error);
+	}
 }
 
 function navigate(destination) {
@@ -68,7 +203,7 @@ function navigate(destination) {
 			(link.title && link.title.toLowerCase().includes(destination))
 		) {
 			link.click();
-			return;
+			return true;
 		}
 
 		for (const child of link.children) {
@@ -77,10 +212,11 @@ function navigate(destination) {
 				(child.title && child.title.toLowerCase().includes(destination))
 			) {
 				link.click();
-				return;
+				return true;
 			}
 		}
 	}
-}
 
-window.actions = actions;
+	// No matching link found
+	return false;
+}
