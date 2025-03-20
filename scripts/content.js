@@ -128,20 +128,37 @@
 		});
 	}
 
+	// Helper function to check if a keydown event matches the hotkey
+	function isHotkeyMatch(event, hotkey) {
+		// Handle legacy format (string)
+		if (typeof hotkey === "string") {
+			return event.key.toLowerCase() === hotkey.toLowerCase();
+		}
+
+		// New format (object with modifiers)
+		return (
+			(!hotkey.ctrl || event.ctrlKey) &&
+			(!hotkey.alt || event.altKey) &&
+			(!hotkey.shift || event.shiftKey) &&
+			event.key.toLowerCase() === hotkey.key.toLowerCase()
+		);
+	}
+
 	// Listen for hotkey presses
 	document.addEventListener("keydown", (e) => {
 		// Microphone hotkey
 		getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone).then((hotkey) => {
-			if (e.key.toLowerCase() === hotkey.toLowerCase()) {
+			if (isHotkeyMatch(e, hotkey)) {
 				toggleMicrophone();
+				e.preventDefault();
 			}
 		});
 
-		// Transcript hotkey (with Ctrl key)
+		// Transcript hotkey
 		getSettingWithDefault("hotkeyTranscript", DEFAULT_SETTINGS.hotkeyTranscript).then((hotkey) => {
-			if (e.ctrlKey && e.key.toLowerCase() === hotkey.toLowerCase()) {
+			if (isHotkeyMatch(e, hotkey)) {
 				window.toggleTranscript();
-				e.preventDefault(); // Prevent browser's default action for Ctrl+T
+				e.preventDefault();
 			}
 		});
 	});

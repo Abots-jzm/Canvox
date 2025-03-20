@@ -94,20 +94,115 @@ document.addEventListener("DOMContentLoaded", () => {
 		console.error("One or more hotkey settings elements are missing.");
 	}
 
-	// Hotkey Assignments
-	function saveHotkey(inputId, storageKey) {
+	// Improved Hotkey Capture System
+	function setupHotkeyCapture(inputId, saveButtonId, storageKey) {
 		const inputField = document.getElementById(inputId);
-		inputField.addEventListener("keyup", (event) => {
-			chrome.storage.sync.set({ [storageKey]: event.key }, () => {
-				console.log(`Hotkey for ${storageKey} set to:`, event.key);
-			});
+		const saveButton = document.getElementById(saveButtonId);
+
+		// Current key combination being captured
+		let currentKeyCombo = {
+			ctrl: false,
+			alt: false,
+			shift: false,
+			key: "",
+		};
+
+		// Function to update the input field display
+		function updateInputDisplay() {
+			let display = [];
+			if (currentKeyCombo.ctrl) display.push("Ctrl");
+			if (currentKeyCombo.alt) display.push("Alt");
+			if (currentKeyCombo.shift) display.push("Shift");
+			if (currentKeyCombo.key && !["Control", "Alt", "Shift"].includes(currentKeyCombo.key)) {
+				display.push(currentKeyCombo.key);
+			}
+
+			inputField.value = display.join(" + ");
+		}
+
+		// When input field is clicked, prepare for key capture
+		inputField.addEventListener("click", (e) => {
+			e.preventDefault();
+			inputField.value = "Press key combination...";
+			inputField.classList.add("capturing");
+
+			// Reset current combination
+			currentKeyCombo = { ctrl: false, alt: false, shift: false, key: "" };
 		});
+
+		// Capture keys
+		inputField.addEventListener("keydown", (e) => {
+			e.preventDefault();
+
+			if (inputField.classList.contains("capturing")) {
+				// Detect modifier keys
+				if (e.key === "Control" || e.key === "Ctrl") {
+					currentKeyCombo.ctrl = true;
+				} else if (e.key === "Alt") {
+					currentKeyCombo.alt = true;
+				} else if (e.key === "Shift") {
+					currentKeyCombo.shift = true;
+				} else {
+					// For regular keys
+					currentKeyCombo.key = e.key;
+
+					// Auto-update display when a regular key is pressed
+					updateInputDisplay();
+					inputField.classList.remove("capturing");
+				}
+
+				// If only modifier keys are pressed, update the display
+				if (!currentKeyCombo.key) {
+					updateInputDisplay();
+				}
+			}
+		});
+
+		// Handle key up to detect when modifiers are released
+		inputField.addEventListener("keyup", (e) => {
+			if (inputField.classList.contains("capturing")) {
+				if (e.key === "Control" || e.key === "Ctrl") currentKeyCombo.ctrl = false;
+				if (e.key === "Alt") currentKeyCombo.alt = false;
+				if (e.key === "Shift") currentKeyCombo.shift = false;
+
+				updateInputDisplay();
+			}
+		});
+
+		// Handle save button
+		saveButton.addEventListener("click", () => {
+			// Don't save empty combinations
+			if (!currentKeyCombo.key && !currentKeyCombo.ctrl && !currentKeyCombo.alt && !currentKeyCombo.shift) {
+				alert("Please set a valid key combination");
+				return;
+			}
+
+			// Save key combination
+			chrome.storage.sync.set(
+				{
+					[storageKey]: {
+						ctrl: currentKeyCombo.ctrl,
+						alt: currentKeyCombo.alt,
+						shift: currentKeyCombo.shift,
+						key: currentKeyCombo.key,
+					},
+				},
+				() => {
+					console.log(`Hotkey for ${storageKey} set to:`, inputField.value);
+					inputField.blur(); // Remove focus
+				}
+			);
+		});
+
+		// Prevent default form submission
+		inputField.form?.addEventListener("submit", (e) => e.preventDefault());
 	}
 
-	saveHotkey("hotkey-microphone", "hotkeyMicrophone");
-	saveHotkey("hotkey-transcript", "hotkeyTranscript");
-	saveHotkey("hotkey-readoutdown", "hotkeyReadoutDown");
-	saveHotkey("hotkey-readoutup", "hotkeyReadoutUp");
+	// Set up hotkey capture for each hotkey input
+	setupHotkeyCapture("hotkey-microphone", "save-microphone", "hotkeyMicrophone");
+	setupHotkeyCapture("hotkey-transcript", "save-transcript", "hotkeyTranscript");
+	setupHotkeyCapture("hotkey-readoutdown", "save-readoutdown", "hotkeyReadoutDown");
+	setupHotkeyCapture("hotkey-readoutup", "save-readoutup", "hotkeyReadoutUp");
 
 	// Load Stored Hotkeys with defaults
 	Promise.all([
@@ -116,17 +211,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		getSettingWithDefault("hotkeyReadoutDown", DEFAULT_SETTINGS.hotkeyReadoutDown),
 		getSettingWithDefault("hotkeyReadoutUp", DEFAULT_SETTINGS.hotkeyReadoutUp),
 	]).then(([micHotkey, transcriptHotkey, readoutDownHotkey, readoutUpHotkey]) => {
-		document.getElementById("hotkey-microphone").value = micHotkey;
-		document.getElementById("hotkey-transcript").value = transcriptHotkey;
-		document.getElementById("hotkey-readoutdown").value = readoutDownHotkey;
-		document.getElementById("hotkey-readoutup").value = readoutUpHotkey;
-
-		// Update the transcript hotkey label to indicate Ctrl is needed
-		const transcriptHotkeyElement = document.getElementById("hotkey-transcript");
-		const transcriptLabel = transcriptHotkeyElement.previousElementSibling;
-		if (transcriptLabel && transcriptLabel.textContent === "Show transcript:") {
-			transcriptLabel.textContent = "Show transcript (Ctrl+):";
+		// Format the display of each hotkey
+		function formatHotkeyDisplay(hotkey) {
+			if (typeof hotkey === "string") {
+				// Legacy format - just a key string
+				return hotkey;
+			} else {
+				// New format - key combination object
+				let display = [];
+				if (hotkey.ctrl) display.push("Ctrl");
+				if (hotkey.alt) display.push("Alt");
+				if (hotkey.shift) display.push("Shift");
+				if (hotkey.key) display.push(hotkey.key);
+				return display.join(" + ");
+			}
 		}
+
+		document.getElementById("hotkey-microphone").value = formatHotkeyDisplay(micHotkey);
+		document.getElementById("hotkey-transcript").value = formatHotkeyDisplay(transcriptHotkey);
+		document.getElementById("hotkey-readoutdown").value = formatHotkeyDisplay(readoutDownHotkey);
+		document.getElementById("hotkey-readoutup").value = formatHotkeyDisplay(readoutUpHotkey);
+
+		// No need for special transcript label anymore as all hotkeys can have combinations
 	});
 
 	// Transcript Button - Now sending message to toggle visibility
