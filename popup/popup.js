@@ -7,21 +7,26 @@ document.addEventListener("DOMContentLoaded", () => {
 	const audioOutput = document.getElementById("audioOutput");
 	const volumeSlider = document.getElementById("volumeAdjust");
 
-	// Default settings
-	const DEFAULT_SETTINGS = {
+	// Default settings (fallback in case defaults.js hasn't loaded)
+	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
 		theme: "dark",
 		hotkeyMicrophone: "x",
 		hotkeyTranscript: "t",
 		hotkeyReadoutDown: "ArrowDown",
 		hotkeyReadoutUp: "ArrowUp",
 		microphoneActive: false,
-		audioInput: "",
-		audioOutput: "",
+		audioInput: "default",
+		audioOutput: "default",
 		volume: 100,
 	};
 
 	// Helper function to get settings with defaults
 	function getSettingWithDefault(key, defaultValue) {
+		if (window.getSettingWithDefault) {
+			return window.getSettingWithDefault(key, defaultValue);
+		}
+
+		// Fallback in case defaults.js hasn't loaded
 		return new Promise((resolve) => {
 			chrome.storage.sync.get(key, (result) => {
 				if (chrome.runtime.lastError) {

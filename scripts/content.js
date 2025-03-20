@@ -7,8 +7,8 @@
 	let recognition = null;
 	let isRecognizing = false;
 
-	// Default settings
-	const DEFAULT_SETTINGS = {
+	// Default settings (fallback in case defaults.js hasn't loaded)
+	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
 		hotkeyMicrophone: "x",
 		microphoneActive: false,
 		audioInput: "default",
@@ -16,6 +16,11 @@
 
 	// Helper function to get settings with defaults
 	function getSettingWithDefault(key, defaultValue) {
+		if (window.getSettingWithDefault) {
+			return window.getSettingWithDefault(key, defaultValue);
+		}
+
+		// Fallback in case defaults.js hasn't loaded
 		return new Promise((resolve) => {
 			chrome.storage.sync.get(key, (result) => {
 				if (chrome.runtime.lastError) {
