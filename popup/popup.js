@@ -7,6 +7,38 @@ document.addEventListener("DOMContentLoaded", () => {
 	const audioOutput = document.getElementById("audioOutput");
 	const volumeSlider = document.getElementById("volumeAdjust");
 
+	// Default settings
+	const DEFAULT_SETTINGS = {
+		theme: "dark",
+		hotkeyMicrophone: "x",
+		hotkeyTranscript: "t",
+		hotkeyReadoutDown: "ArrowDown",
+		hotkeyReadoutUp: "ArrowUp",
+		microphoneActive: false,
+		audioInput: "",
+		audioOutput: "",
+		volume: 100,
+	};
+
+	// Helper function to get settings with defaults
+	function getSettingWithDefault(key, defaultValue) {
+		return new Promise((resolve) => {
+			chrome.storage.sync.get(key, (result) => {
+				if (chrome.runtime.lastError) {
+					console.error(chrome.runtime.lastError);
+				}
+
+				// If setting doesn't exist, save and use default
+				if (result[key] === undefined) {
+					chrome.storage.sync.set({ [key]: defaultValue });
+					resolve(defaultValue);
+				} else {
+					resolve(result[key]);
+				}
+			});
+		});
+	}
+
 	function themetoggle() {
 		if (!toggleButton || !transcriptButton || !hotkeyButton) {
 			console.error("One or more theme toggle elements are missing.");
@@ -28,9 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		toggleButton.addEventListener("click", themetoggle);
 	}
 
-	// Load the theme from storage
-	chrome.storage.sync.get("theme", (data) => {
-		if (data && data.theme === "light") {
+	// Load the theme from storage with default
+	getSettingWithDefault("theme", DEFAULT_SETTINGS.theme).then((theme) => {
+		if (theme === "light") {
 			document.body.classList.add("light-mode");
 			if (toggleButton) toggleButton.classList.add("button-light-mode");
 			if (transcriptButton) transcriptButton.classList.add("button-light-mode");
@@ -72,12 +104,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	saveHotkey("hotkey-readoutdown", "hotkeyReadoutDown");
 	saveHotkey("hotkey-readoutup", "hotkeyReadoutUp");
 
-	// Load Stored Hotkeys
-	chrome.storage.sync.get(["hotkeyMicrophone", "hotkeyTranscript", "hotkeyReadoutDown", "hotkeyReadoutUp"], (data) => {
-		if (data.hotkeyMicrophone) document.getElementById("hotkey-microphone").value = data.hotkeyMicrophone;
-		if (data.hotkeyTranscript) document.getElementById("hotkey-transcript").value = data.hotkeyTranscript;
-		if (data.hotkeyReadoutDown) document.getElementById("hotkey-readoutdown").value = data.hotkeyReadoutDown;
-		if (data.hotkeyReadoutUp) document.getElementById("hotkey-readoutup").value = data.hotkeyReadoutUp;
+	// Load Stored Hotkeys with defaults
+	Promise.all([
+		getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone),
+		getSettingWithDefault("hotkeyTranscript", DEFAULT_SETTINGS.hotkeyTranscript),
+		getSettingWithDefault("hotkeyReadoutDown", DEFAULT_SETTINGS.hotkeyReadoutDown),
+		getSettingWithDefault("hotkeyReadoutUp", DEFAULT_SETTINGS.hotkeyReadoutUp),
+	]).then(([micHotkey, transcriptHotkey, readoutDownHotkey, readoutUpHotkey]) => {
+		document.getElementById("hotkey-microphone").value = micHotkey;
+		document.getElementById("hotkey-transcript").value = transcriptHotkey;
+		document.getElementById("hotkey-readoutdown").value = readoutDownHotkey;
+		document.getElementById("hotkey-readoutup").value = readoutUpHotkey;
 	});
 
 	// Transcript Button (Placeholder for Future)
@@ -94,11 +131,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Load Microphone State
-	chrome.storage.sync.get("microphoneActive", (data) => {
-		if (data.microphoneActive !== undefined) {
-			micToggle.checked = data.microphoneActive;
-		}
+	// Load Microphone State with default
+	getSettingWithDefault("microphoneActive", DEFAULT_SETTINGS.microphoneActive).then((isActive) => {
+		micToggle.checked = isActive;
 	});
 
 	// Audio Input Selection
@@ -132,10 +167,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		chrome.storage.sync.set({ audioOutput: audioOutput.value });
 	});
 
-	// Load Saved Audio Preferences
-	chrome.storage.sync.get(["audioInput", "audioOutput"], (data) => {
-		if (data.audioInput) audioInput.value = data.audioInput;
-		if (data.audioOutput) audioOutput.value = data.audioOutput;
+	// Load Saved Audio Preferences with defaults
+	Promise.all([
+		getSettingWithDefault("audioInput", DEFAULT_SETTINGS.audioInput),
+		getSettingWithDefault("audioOutput", DEFAULT_SETTINGS.audioOutput),
+	]).then(([inputDevice, outputDevice]) => {
+		if (inputDevice) audioInput.value = inputDevice;
+		if (outputDevice) audioOutput.value = outputDevice;
 	});
 
 	// Volume Slider
@@ -145,10 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Load Volume Settings
-	chrome.storage.sync.get("volume", (data) => {
-		if (data.volume !== undefined) {
-			volumeSlider.value = data.volume;
-		}
+	// Load Volume Settings with default
+	getSettingWithDefault("volume", DEFAULT_SETTINGS.volume).then((vol) => {
+		volumeSlider.value = vol;
 	});
 });
