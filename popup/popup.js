@@ -137,30 +137,70 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	// Audio Input Selection
-	navigator.mediaDevices.enumerateDevices().then((devices) => {
-		const inputDevices = devices.filter((device) => device.kind === "audioinput");
-		inputDevices.forEach((device) => {
-			let option = document.createElement("option");
-			option.value = device.deviceId;
-			option.textContent = device.label || `Microphone ${audioInput.length + 1}`;
-			audioInput.appendChild(option);
+	navigator.mediaDevices
+		.enumerateDevices()
+		.then((devices) => {
+			// Clear existing options except the default one
+			while (audioInput.options.length > 1) {
+				audioInput.options.remove(1);
+			}
+
+			// Set the first option as "system default"
+			audioInput.options[0].textContent = "System Default";
+			audioInput.options[0].value = "default";
+
+			// Add the actual input devices
+			const inputDevices = devices.filter((device) => device.kind === "audioinput");
+			inputDevices.forEach((device, index) => {
+				let option = document.createElement("option");
+				option.value = device.deviceId;
+				option.textContent = device.label || `Microphone ${index + 1}`;
+				audioInput.appendChild(option);
+			});
+		})
+		.catch((err) => {
+			console.error("Error enumerating audio devices:", err);
 		});
-	});
 
 	// Audio Output Selection
-	navigator.mediaDevices.enumerateDevices().then((devices) => {
-		const outputDevices = devices.filter((device) => device.kind === "audiooutput");
-		outputDevices.forEach((device) => {
-			let option = document.createElement("option");
-			option.value = device.deviceId;
-			option.textContent = device.label || `Speaker ${audioOutput.length + 1}`;
-			audioOutput.appendChild(option);
+	navigator.mediaDevices
+		.enumerateDevices()
+		.then((devices) => {
+			// Clear existing options except the default one
+			while (audioOutput.options.length > 1) {
+				audioOutput.options.remove(1);
+			}
+
+			// Set the first option as "system default"
+			audioOutput.options[0].textContent = "System Default";
+			audioOutput.options[0].value = "default";
+
+			// Add the actual output devices
+			const outputDevices = devices.filter((device) => device.kind === "audiooutput");
+			outputDevices.forEach((device, index) => {
+				let option = document.createElement("option");
+				option.value = device.deviceId;
+				option.textContent = device.label || `Speaker ${index + 1}`;
+				audioOutput.appendChild(option);
+			});
+		})
+		.catch((err) => {
+			console.error("Error enumerating audio devices:", err);
 		});
-	});
 
 	// Save Audio Input/Output Selection
 	audioInput.addEventListener("change", () => {
-		chrome.storage.sync.set({ audioInput: audioInput.value });
+		chrome.storage.sync.set({ audioInput: audioInput.value }, () => {
+			// Send message to content script to update the microphone
+			chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+				if (tabs[0]) {
+					chrome.tabs.sendMessage(tabs[0].id, {
+						action: "updateAudioInput",
+						deviceId: audioInput.value,
+					});
+				}
+			});
+		});
 	});
 
 	audioOutput.addEventListener("change", () => {
@@ -172,8 +212,41 @@ document.addEventListener("DOMContentLoaded", () => {
 		getSettingWithDefault("audioInput", DEFAULT_SETTINGS.audioInput),
 		getSettingWithDefault("audioOutput", DEFAULT_SETTINGS.audioOutput),
 	]).then(([inputDevice, outputDevice]) => {
-		if (inputDevice) audioInput.value = inputDevice;
-		if (outputDevice) audioOutput.value = outputDevice;
+		// Set audio input device if it exists in the list
+		if (inputDevice) {
+			// Check if the device exists in the list
+			let deviceExists = false;
+			for (let i = 0; i < audioInput.options.length; i++) {
+				if (audioInput.options[i].value === inputDevice) {
+					audioInput.value = inputDevice;
+					deviceExists = true;
+					break;
+				}
+			}
+
+			// If device doesn't exist, set to default
+			if (!deviceExists) {
+				audioInput.value = "default";
+				chrome.storage.sync.set({ audioInput: "default" });
+			}
+		}
+
+		// Same check for output device
+		if (outputDevice) {
+			let deviceExists = false;
+			for (let i = 0; i < audioOutput.options.length; i++) {
+				if (audioOutput.options[i].value === outputDevice) {
+					audioOutput.value = outputDevice;
+					deviceExists = true;
+					break;
+				}
+			}
+
+			if (!deviceExists) {
+				audioOutput.value = "default";
+				chrome.storage.sync.set({ audioOutput: "default" });
+			}
+		}
 	});
 
 	// Volume Slider
