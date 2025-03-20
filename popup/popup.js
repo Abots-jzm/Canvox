@@ -12,8 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		theme: "dark",
 		hotkeyMicrophone: "x",
 		hotkeyTranscript: "t",
-		hotkeyReadoutDown: "ArrowDown",
-		hotkeyReadoutUp: "ArrowUp",
+		hotkeyReadoutDown: "Down",
+		hotkeyReadoutUp: "Up",
 		microphoneActive: false,
 		audioInput: "default",
 		audioOutput: "default",
@@ -120,12 +120,32 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("hotkey-transcript").value = transcriptHotkey;
 		document.getElementById("hotkey-readoutdown").value = readoutDownHotkey;
 		document.getElementById("hotkey-readoutup").value = readoutUpHotkey;
+
+		// Update the transcript hotkey label to indicate Ctrl is needed
+		const transcriptHotkeyElement = document.getElementById("hotkey-transcript");
+		const transcriptLabel = transcriptHotkeyElement.previousElementSibling;
+		if (transcriptLabel && transcriptLabel.textContent === "Show transcript:") {
+			transcriptLabel.textContent = "Show transcript (Ctrl+):";
+		}
 	});
 
-	// Transcript Button (Placeholder for Future)
+	// Transcript Button - Now sending message to toggle visibility
 	transcriptButton.addEventListener("click", () => {
-		console.log("Transcript button clicked - Implement functionality here");
-		// You can add a function to fetch and display transcript data here
+		chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+			if (tabs[0]) {
+				chrome.tabs.sendMessage(
+					tabs[0].id,
+					{
+						action: "toggleTranscript",
+					},
+					(response) => {
+						if (response && response.success) {
+							console.log("Transcript visibility toggled:", response.isVisible);
+						}
+					}
+				);
+			}
+		});
 	});
 
 	// Microphone Toggle

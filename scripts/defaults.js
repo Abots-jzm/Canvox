@@ -8,12 +8,15 @@ window.DEFAULT_SETTINGS = {
 
 	// Hotkeys
 	hotkeyMicrophone: "x",
-	hotkeyTranscript: "t",
-	hotkeyReadoutDown: "ArrowDown",
-	hotkeyReadoutUp: "ArrowUp",
+	hotkeyTranscript: "t", // Will be used with Ctrl key
+	hotkeyReadoutDown: "Down",
+	hotkeyReadoutUp: "Up",
 
 	// Microphone state
 	microphoneActive: false,
+
+	// Transcript visibility
+	transcriptVisible: true,
 
 	// Audio preferences
 	audioInput: "default",

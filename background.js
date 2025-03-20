@@ -6,8 +6,8 @@ const DEFAULT_SETTINGS = {
 	// Hotkeys
 	hotkeyMicrophone: "x",
 	hotkeyTranscript: "t",
-	hotkeyReadoutDown: "ArrowDown",
-	hotkeyReadoutUp: "ArrowUp",
+	hotkeyReadoutDown: "Down",
+	hotkeyReadoutUp: "Up",
 
 	// Microphone state
 	microphoneActive: false,

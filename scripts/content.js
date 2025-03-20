@@ -1,5 +1,5 @@
 (function () {
-	const { speechDisplay } = window.injectElements();
+	const { speechDisplay, speechContainer } = window.injectElements();
 
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	if (!SpeechRecognition) return;
@@ -10,7 +10,9 @@
 	// Default settings (fallback in case defaults.js hasn't loaded)
 	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
 		hotkeyMicrophone: "x",
+		hotkeyTranscript: "t",
 		microphoneActive: false,
+		transcriptVisible: true,
 		audioInput: "default",
 	};
 
@@ -128,10 +130,18 @@
 
 	// Listen for hotkey presses
 	document.addEventListener("keydown", (e) => {
-		// Get the current microphone hotkey
+		// Microphone hotkey
 		getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone).then((hotkey) => {
 			if (e.key.toLowerCase() === hotkey.toLowerCase()) {
 				toggleMicrophone();
+			}
+		});
+
+		// Transcript hotkey (with Ctrl key)
+		getSettingWithDefault("hotkeyTranscript", DEFAULT_SETTINGS.hotkeyTranscript).then((hotkey) => {
+			if (e.ctrlKey && e.key.toLowerCase() === hotkey.toLowerCase()) {
+				window.toggleTranscript();
+				e.preventDefault(); // Prevent browser's default action for Ctrl+T
 			}
 		});
 	});
@@ -173,6 +183,12 @@
 		if (message.action === "updateAudioInput") {
 			initializeSpeechRecognition(message.deviceId);
 			sendResponse({ success: true });
+			return true;
+		}
+
+		if (message.action === "toggleTranscript") {
+			const newVisibility = window.toggleTranscript();
+			sendResponse({ success: true, isVisible: newVisibility });
 			return true;
 		}
 	});
