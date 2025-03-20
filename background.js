@@ -4,10 +4,10 @@ const DEFAULT_SETTINGS = {
 	theme: "dark",
 
 	// Hotkeys
-	hotkeyMicrophone: "x",
-	hotkeyTranscript: "t",
-	hotkeyReadoutDown: "Down",
-	hotkeyReadoutUp: "Up",
+	hotkeyMicrophone: { ctrl: false, alt: false, shift: false, key: "x" },
+	hotkeyTranscript: { ctrl: true, alt: false, shift: false, key: "t" },
+	hotkeyReadoutDown: { ctrl: false, alt: false, shift: false, key: "Down" },
+	hotkeyReadoutUp: { ctrl: false, alt: false, shift: false, key: "Up" },
 
 	// Microphone state
 	microphoneActive: false,
@@ -29,6 +29,35 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 		chrome.storage.sync.set(DEFAULT_SETTINGS, () => {
 			console.log("Default settings initialized");
 		});
+	} else if (reason === "update") {
+		// Migrate legacy hotkeys to new format if needed
+		chrome.storage.sync.get(
+			["hotkeyMicrophone", "hotkeyTranscript", "hotkeyReadoutDown", "hotkeyReadoutUp"],
+			(data) => {
+				const updates = {};
+
+				// Check and migrate each hotkey
+				["hotkeyMicrophone", "hotkeyTranscript", "hotkeyReadoutDown", "hotkeyReadoutUp"].forEach((key) => {
+					// If it exists and is a string (old format), convert to new format
+					if (data[key] && typeof data[key] === "string") {
+						const isTranscript = key === "hotkeyTranscript";
+						updates[key] = {
+							ctrl: isTranscript, // Transcript uses Ctrl by default
+							alt: false,
+							shift: false,
+							key: data[key],
+						};
+					}
+				});
+
+				// Save updates if any
+				if (Object.keys(updates).length > 0) {
+					chrome.storage.sync.set(updates, () => {
+						console.log("Migrated legacy hotkeys to new format");
+					});
+				}
+			}
+		);
 	}
 });
 

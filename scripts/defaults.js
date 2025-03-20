@@ -6,11 +6,11 @@ window.DEFAULT_SETTINGS = {
 	// Theme
 	theme: "dark",
 
-	// Hotkeys
-	hotkeyMicrophone: "x",
-	hotkeyTranscript: "t", // Will be used with Ctrl key
-	hotkeyReadoutDown: "Down",
-	hotkeyReadoutUp: "Up",
+	// Hotkeys - now using objects for key combinations
+	hotkeyMicrophone: { ctrl: false, alt: false, shift: false, key: "x" },
+	hotkeyTranscript: { ctrl: true, alt: false, shift: false, key: "t" },
+	hotkeyReadoutDown: { ctrl: false, alt: false, shift: false, key: "Down" },
+	hotkeyReadoutUp: { ctrl: false, alt: false, shift: false, key: "Up" },
 
 	// Microphone state
 	microphoneActive: false,
