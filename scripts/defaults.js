@@ -8,7 +8,7 @@ window.DEFAULT_SETTINGS = {
 
 	// Hotkeys - now using objects for key combinations
 	hotkeyMicrophone: { ctrl: false, alt: false, shift: false, key: "x" },
-	hotkeyTranscript: { ctrl: true, alt: false, shift: false, key: "t" },
+	hotkeyTranscript: { ctrl: true, alt: false, shift: false, key: " " }, // Ctrl + Space
 	hotkeyReadoutDown: { ctrl: false, alt: false, shift: false, key: "Down" },
 	hotkeyReadoutUp: { ctrl: false, alt: false, shift: false, key: "Up" },
 
