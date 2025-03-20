@@ -14,13 +14,18 @@
 	},
 	"content_scripts": [
 		{
-			"js": ["scripts/injectElements.js", "scripts/content.js", "scripts/sidebar.js", "scripts/actions.js"],
+			"js": [
+				"scripts/defaults.js",
+				"scripts/injectElements.js",
+				"scripts/content.js",
+				"scripts/sidebar.js",
+				"scripts/actions.js"
+			],
 			"matches": ["https://*.instructure.com/*"]
 		}
 	],
 	"background": {
-		"service_worker": "background.js",
-		"type": "module"
+		"service_worker": "background.js"
 	},
 	"permissions": ["storage", "activeTab", "scripting"]
 }

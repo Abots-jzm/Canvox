@@ -68,7 +68,29 @@ function injectElements() {
 	speechContainer.appendChild(textInput);
 	document.body.appendChild(speechContainer);
 
-	return { speechDisplay };
+	// Set initial visibility based on saved preference
+	chrome.storage.sync.get("transcriptVisible", (data) => {
+		if (data.transcriptVisible === false) {
+			speechContainer.style.display = "none";
+		} else {
+			speechContainer.style.display = "block";
+		}
+	});
+
+	// Function to toggle transcript visibility
+	function toggleTranscript() {
+		const isVisible = speechContainer.style.display !== "none";
+		speechContainer.style.display = isVisible ? "none" : "block";
+
+		// Save the state to storage
+		chrome.storage.sync.set({ transcriptVisible: !isVisible });
+
+		return !isVisible; // Return the new visibility state
+	}
+
+	window.toggleTranscript = toggleTranscript;
+
+	return { speechDisplay, speechContainer };
 }
 
 window.injectElements = injectElements;

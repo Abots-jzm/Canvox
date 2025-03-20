@@ -5,6 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="./popup.css" />
+		<script src="../scripts/defaults.js"></script>
 		<script defer src="./popup.js" type="module"></script>
 	</head>
 	<body>
@@ -13,23 +14,6 @@
 				<a href="https://imgur.com/qQeJpTK">
 					<img src="https://imgur.com/qQeJpTK.png" title="source: imagur.com" class="logo-image" />
 				</a>
-				<div class="control-buttons">
-					<button class="button-style">
-						<a href="https://imgur.com/Gxd7g7S">
-							<img src="https://imgur.com/Gxd7g7S.png" title="source: imagur.com" class="question-image" />
-						</a>
-					</button>
-					<button class="button-style">
-						<a href="https://imgur.com/x4JY95p">
-							<img src="https://imgur.com/x4JY95p.png" title="source: imagur.com" class="gear-image" />
-						</a>
-					</button>
-					<button class="button-style">
-						<a href="https://imgur.com/aUpYo99">
-							<img src="https://imgur.com/aUpYo99.png" title="source: imagur.com" class="more-image" />
-						</a>
-					</button>
-				</div>
 			</div>
 
 			<div class="middle-bar">
@@ -47,7 +31,7 @@
 						<div class="audioInput">
 							<label for="audioInput">Audio Input</label>
 							<select name="audioIn" id="audioInput">
-								<option value="lol">system default</option>
+								<option value="default">System Default</option>
 							</select>
 						</div>
 					</form>
@@ -59,7 +43,7 @@
 					<form>
 						<div class="volumeSlider">
 							<label for="volumeAdjust">Voice Readout Volume</label>
-							<input type="range" name="volumeSlider" id="volumeAdjust" />
+							<input type="range" name="volumeSlider" id="volumeAdjust" value="100" />
 						</div>
 					</form>
 				</div>
@@ -69,7 +53,7 @@
 						<div class="audioOutput">
 							<label for="audioOutput">Audio Output</label>
 							<select name="audioOut" id="audioOutput">
-								<option value="lol">system default</option>
+								<option value="default">System Default</option>
 							</select>
 						</div>
 					</form>
@@ -88,7 +72,7 @@
 					<input type="text" id="hotkey-microphone" />
 					<button id="save-microphone">set</button>
 
-					<div>Show transcript:</div>
+					<div>Toggle transcript:</div>
 					<input type="text" id="hotkey-transcript" />
 					<button id="save-transcript">set</button>
 
@@ -107,7 +91,7 @@
 					<button class="theme-toggle">light mode</button>
 				</div>
 				<div>
-					<button class="transcript">Show transcript</button>
+					<button class="transcript">Toggle transcript</button>
 				</div>
 			</div>
 		</div>
