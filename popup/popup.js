@@ -113,8 +113,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (currentKeyCombo.ctrl) display.push("Ctrl");
 			if (currentKeyCombo.alt) display.push("Alt");
 			if (currentKeyCombo.shift) display.push("Shift");
-			if (currentKeyCombo.key && !["Control", "Alt", "Shift"].includes(currentKeyCombo.key)) {
-				display.push(currentKeyCombo.key);
+
+			// Handle special keys, particularly Space
+			if (currentKeyCombo.key) {
+				let keyDisplay = currentKeyCombo.key;
+				if (currentKeyCombo.key === " ") {
+					keyDisplay = "Space";
+				} else if (!["Control", "Alt", "Shift"].includes(currentKeyCombo.key)) {
+					// Keep the key as is for other keys
+				}
+				display.push(keyDisplay);
 			}
 
 			inputField.value = display.join(" + ");
@@ -215,14 +223,22 @@ document.addEventListener("DOMContentLoaded", () => {
 		function formatHotkeyDisplay(hotkey) {
 			if (typeof hotkey === "string") {
 				// Legacy format - just a key string
-				return hotkey;
+				return hotkey === " " ? "Space" : hotkey;
 			} else {
 				// New format - key combination object
 				let display = [];
 				if (hotkey.ctrl) display.push("Ctrl");
 				if (hotkey.alt) display.push("Alt");
 				if (hotkey.shift) display.push("Shift");
-				if (hotkey.key) display.push(hotkey.key);
+
+				// Handle Space key specially
+				if (hotkey.key) {
+					if (hotkey.key === " ") {
+						display.push("Space");
+					} else {
+						display.push(hotkey.key);
+					}
+				}
 				return display.join(" + ");
 			}
 		}
