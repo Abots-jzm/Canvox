@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	const toggleButton = document.querySelector(".theme-toggle");
 	const transcriptButton = document.querySelector(".transcript");
 	const hotkeyButton = document.querySelector(".change-hotkeys");
+	const micToggle = document.getElementById("micToggle");
+	const audioInput = document.getElementById("audioInput");
+	const audioOutput = document.getElementById("audioOutput");
+	const volumeSlider = document.getElementById("volumeAdjust");
 
 	function themetoggle() {
 		if (!toggleButton || !transcriptButton || !hotkeyButton) {
@@ -52,16 +56,35 @@ document.addEventListener("DOMContentLoaded", () => {
 	} else {
 		console.error("One or more hotkey settings elements are missing.");
 	}
-});
 
-document.addEventListener("DOMContentLoaded", () => {
-	const toggleButton = document.querySelector(".theme-toggle");
-	const transcriptButton = document.querySelector(".transcript");
-	const hotkeyButton = document.querySelector(".change-hotkeys");
-	const micToggle = document.getElementById("micToggle");
-	const audioInput = document.getElementById("audioInput");
-	const audioOutput = document.getElementById("audioOutput");
-	const volumeSlider = document.getElementById("volumeAdjust");
+	// Hotkey Assignments
+	function saveHotkey(inputId, storageKey) {
+		const inputField = document.getElementById(inputId);
+		inputField.addEventListener("keyup", (event) => {
+			chrome.storage.sync.set({ [storageKey]: event.key }, () => {
+				console.log(`Hotkey for ${storageKey} set to:`, event.key);
+			});
+		});
+	}
+
+	saveHotkey("hotkey-microphone", "hotkeyMicrophone");
+	saveHotkey("hotkey-transcript", "hotkeyTranscript");
+	saveHotkey("hotkey-readoutdown", "hotkeyReadoutDown");
+	saveHotkey("hotkey-readoutup", "hotkeyReadoutUp");
+
+	// Load Stored Hotkeys
+	chrome.storage.sync.get(["hotkeyMicrophone", "hotkeyTranscript", "hotkeyReadoutDown", "hotkeyReadoutUp"], (data) => {
+		if (data.hotkeyMicrophone) document.getElementById("hotkey-microphone").value = data.hotkeyMicrophone;
+		if (data.hotkeyTranscript) document.getElementById("hotkey-transcript").value = data.hotkeyTranscript;
+		if (data.hotkeyReadoutDown) document.getElementById("hotkey-readoutdown").value = data.hotkeyReadoutDown;
+		if (data.hotkeyReadoutUp) document.getElementById("hotkey-readoutup").value = data.hotkeyReadoutUp;
+	});
+
+	// Transcript Button (Placeholder for Future)
+	transcriptButton.addEventListener("click", () => {
+		console.log("Transcript button clicked - Implement functionality here");
+		// You can add a function to fetch and display transcript data here
+	});
 
 	// Microphone Toggle
 	micToggle.addEventListener("change", () => {
@@ -127,71 +150,5 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (data.volume !== undefined) {
 			volumeSlider.value = data.volume;
 		}
-	});
-
-	// Theme Toggle
-	function themetoggle() {
-		document.body.classList.toggle("light-mode");
-		toggleButton.classList.toggle("button-light-mode");
-		transcriptButton.classList.toggle("button-light-mode");
-		hotkeyButton.classList.toggle("button-light-mode");
-
-		const currentTheme = document.body.classList.contains("light-mode") ? "light" : "dark";
-		chrome.storage.sync.set({ theme: currentTheme }, () => {
-			console.log("Theme saved:", currentTheme);
-		});
-	}
-
-	toggleButton.addEventListener("click", themetoggle);
-
-	// Load Theme from Storage
-	chrome.storage.sync.get("theme", (data) => {
-		if (data.theme === "light") {
-			document.body.classList.add("light-mode");
-			toggleButton.classList.add("button-light-mode");
-			transcriptButton.classList.add("button-light-mode");
-			hotkeyButton.classList.add("button-light-mode");
-		}
-	});
-
-	// Hotkey Settings Panel
-	const settingsPanel = document.querySelector(".hotkey-settings");
-	const closeSettingsBtn = document.getElementById("close-settings");
-
-	hotkeyButton.addEventListener("click", () => {
-		settingsPanel.style.display = "block";
-	});
-
-	closeSettingsBtn.addEventListener("click", () => {
-		settingsPanel.style.display = "none";
-	});
-
-	// Hotkey Assignments
-	function saveHotkey(inputId, storageKey) {
-		const inputField = document.getElementById(inputId);
-		inputField.addEventListener("keyup", (event) => {
-			chrome.storage.sync.set({ [storageKey]: event.key }, () => {
-				console.log(`Hotkey for ${storageKey} set to:`, event.key);
-			});
-		});
-	}
-
-	saveHotkey("hotkey-microphone", "hotkeyMicrophone");
-	saveHotkey("hotkey-transcript", "hotkeyTranscript");
-	saveHotkey("hotkey-readoutdown", "hotkeyReadoutDown");
-	saveHotkey("hotkey-readoutup", "hotkeyReadoutUp");
-
-	// Load Stored Hotkeys
-	chrome.storage.sync.get(["hotkeyMicrophone", "hotkeyTranscript", "hotkeyReadoutDown", "hotkeyReadoutUp"], (data) => {
-		if (data.hotkeyMicrophone) document.getElementById("hotkey-microphone").value = data.hotkeyMicrophone;
-		if (data.hotkeyTranscript) document.getElementById("hotkey-transcript").value = data.hotkeyTranscript;
-		if (data.hotkeyReadoutDown) document.getElementById("hotkey-readoutdown").value = data.hotkeyReadoutDown;
-		if (data.hotkeyReadoutUp) document.getElementById("hotkey-readoutup").value = data.hotkeyReadoutUp;
-	});
-
-	// Transcript Button (Placeholder for Future)
-	transcriptButton.addEventListener("click", () => {
-		console.log("Transcript button clicked - Implement functionality here");
-		// You can add a function to fetch and display transcript data here
 	});
 });
