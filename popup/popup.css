@@ -3,120 +3,106 @@ body {
 	height: 261px;
 	background-color: black;
 	color: white;
-
 }
 
-button{
+button {
 	cursor: pointer;
 }
 
-.light-mode{
+.light-mode {
 	background-color: white;
 	color: black;
 }
 
-
-select{
+select {
 	width: 100px;
 	font-size: 12px;
 	border-radius: 5px;
 }
 
-
 .button-style {
-	display: flex;          
-	justify-content: center; 
-	align-items: center;     
-	width: 15px;             
-	height: 15px;             
-	padding: 0;               
-	font-size: 8px;            
-	text-align: center;       
-	border: 1px solid black;   
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 15px;
+	height: 15px;
+	padding: 0;
+	font-size: 8px;
+	text-align: center;
+	border: 1px solid black;
 	overflow: hidden;
 	cursor: pointer;
 	background: none;
-	
 }
 
-
-
-.top-bar{
+.top-bar {
 	display: flex;
 	align-items: center;
 	/* border: 1px solid white; */
 }
 
-.logo-image{
+.logo-image {
 	cursor: default;
 	margin-right: auto;
 	/* border: 1px solid white; */
-
 }
 
-.control-buttons{
+.control-buttons {
 	display: flex;
 	margin-left: auto;
 	/* border: 1px solid white; */
-
 }
 
-.middle-bar{
+.middle-bar {
 	/* border: 1px solid white; */
 	display: flex;
 	align-items: center;
 	margin-top: 25px;
-
 }
-.checkbox{
+.checkbox {
 	display: flex;
 	/* border: 1px solid white; */
 	margin-right: 57px;
 	margin-left: 18px;
-
 }
 
-.audioInput{
+.audioInput {
 	display: flex;
 	flex-direction: column;
 	/* border: 1px solid white; */
 }
 
-.third-bar{
+.third-bar {
 	display: flex;
 	align-items: center;
 	/* border: 1px solid white; */
 	margin-top: 40px;
-
 }
 
-
-.volumeSlider{
+.volumeSlider {
 	display: flex;
 	flex-direction: column;
 	/* border: 1px solid white; */
 	margin-right: 50px;
 	margin-left: 18px;
-
 }
 
-.audioOutput{
+.audioOutput {
 	display: flex;
 	flex-direction: column;
 	/* border: 1px solid white; */
 }
 
-
-.bottom-bar{
+.bottom-bar {
 	display: flex;
 	justify-content: center;
 	/* border: 1px solid white; */
 	margin-top: 35px;
-	
-
 }
 
-.theme-toggle, .transcript, .change-hotkeys{
+.theme-toggle,
+.transcript,
+.change-hotkeys {
 	cursor: pointer;
 	/* border: 1px solid white; */
 	background: none;
@@ -124,7 +110,7 @@ select{
 	border: none;
 }
 
-.button-light-mode{
+.button-light-mode {
 	cursor: pointer;
 	/* border: 1px solid white; */
 	background: none;
@@ -132,21 +118,31 @@ select{
 	border: none;
 }
 
-.hotkey-settings{
+.hotkey-settings {
 	display: none;
 	position: fixed;
 	right: 10px;
 	top: 50px;
-	width: 150px;
 	height: 150px;
 	background-color: grey;
 	padding: 15px;
-	box-shadow: 0 0 10px rgba(0,0,0,0.2);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 	border-radius: 8px;
 	overflow: auto;
 }
 
+.capturing {
+	background-color: #f7f7f7;
+	border: 2px solid #4f8bf5;
+	color: #555;
+	font-style: italic;
+}
 
-
-
-
+/* Make sure hotkey input fields are wide enough */
+#hotkey-microphone,
+#hotkey-transcript,
+#hotkey-readoutdown,
+#hotkey-readoutup {
+	width: 150px;
+	margin-right: 5px;
+}
