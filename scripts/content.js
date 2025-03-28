@@ -152,8 +152,7 @@
 
 		// Get the current volume from storage
 		chrome.storage.sync.get("volume", (data) => {
-			currVol = data.volume // Log the current volume for debugging
-			console.log(`Current volume 1: ${currVol}`); // Log the current volume for debugging
+			currVol = data.volume // Retrieve current volume
 			if (currVol === undefined) {
 				// If volume is not set, default to 50
 				currVol = DEFAULT_SETTINGS.volume;
