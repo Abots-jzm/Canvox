@@ -23,7 +23,7 @@ window.DEFAULT_SETTINGS = {
 	audioOutput: "default",
 
 	// Volume
-	volume: 100, // Scale 0-100
+	volume: 50, // Scale 0-100
 };
 
 /**
