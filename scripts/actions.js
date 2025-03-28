@@ -49,6 +49,9 @@ function extractDestination(transcript) {
 	// Pattern 7: Click/Press actions - "click X", "press X", etc.
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
+	// Pattern 8: Narration - "Read the main content", etc.
+	const narrateContent =
+		/(read|speak|narrate)(\s+the)?(\s+(main|this|page))?(\s+content)?/i;
 
 	let match;
 	let destination;
@@ -67,7 +70,6 @@ function extractDestination(transcript) {
 	} else if ((match = directCommands.exec(transcript))) {
 		destination = match[1];
 	}
-
 	// If there was a RegEx match,
 	// remove words like "please", "pls", "plz".
 	if (destination) {
@@ -81,47 +83,22 @@ function extractDestination(transcript) {
 
 // Collects all unique link texts from the page, removing duplicates and substrings
 function collectUniqueDestinations() {
-
-	// Links on the main dashboard
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
-
-	// Courses and Groups that are allocated dynamically (only accessed after clicking the sidebar button)
-	const navTrayPortal = document.querySelector("#nav-tray-portal");
-	
-	if (!layoutWrapper && !navTrayPortal) return [];
+	if (!layoutWrapper) return [];
 
 	// Exclude the right-side-wrapper and its children
-	const rightSideWrapper = layoutWrapper ? layoutWrapper.querySelector("#right-side-wrapper") : null;
+	const rightSideWrapper = layoutWrapper.querySelector("#right-side-wrapper");
 
 	// Get all links except those in the right-side-wrapper
 	const links = [];
-	
-	// Process links from the layout wrapper
-	if (layoutWrapper) {
-		const allLinks = layoutWrapper.querySelectorAll("a");
-		for (const link of allLinks) {
-			// Check if the link is a descendant of right-side-wrapper
-			if (rightSideWrapper && rightSideWrapper.contains(link)) {
-				continue; // Skip links inside right-side-wrapper
-			}
-			links.push(link);
+	const allLinks = layoutWrapper.querySelectorAll("a");
+
+	for (const link of allLinks) {
+		// Check if the link is a descendant of right-side-wrapper
+		if (rightSideWrapper && rightSideWrapper.contains(link)) {
+			continue; // Skip links inside right-side-wrapper
 		}
-	}
-	
-	// Also get links from the nav-tray-portal if it exists
-	if (navTrayPortal && navTrayPortal.getAttribute('aria-hidden') !== 'true') {
-		const navTrayLinks = navTrayPortal.querySelectorAll("a");
-		for (const link of navTrayLinks) {
-			links.push(link);
-		}
-		
-		// Additionally, collect text from other clickable elements in the tray
-		const clickableElements = navTrayPortal.querySelectorAll("[role='button'], button, [tabindex='0']");
-		for (const element of clickableElements) {
-			if (!element.closest("a")) { // Avoid duplicating elements that are inside links
-				links.push(element);
-			}
-		}
+		links.push(link);
 	}
 
 	// Collect all possible link texts
@@ -198,9 +175,13 @@ async function useGPT(transcript) {
 			}
 		);
 		const data = await response.json();
-		console.log("API response:", data);
 		if (data && data.response) {
-			const destination = data.response.trim().toLowerCase();
+			//trim and remove quotes at the start and end if there is any
+			const destination = data.response
+				.trim()
+				.replace(/^["']|["']$/g, "")
+				.toLowerCase();
+			console.log("Destination from GPT:", destination);
 			// After getting the destination, trigger navigation
 			const wasASidebarAction = window.sidebarActionsRouter(destination);
 			if (!wasASidebarAction) {
@@ -240,4 +221,61 @@ function navigate(destination) {
 
 	// No matching link found
 	return false;
+}
+
+async function textToSpeech(transcript) {
+	try {
+		console.log("Calling API (TTS)...");
+		
+		const narrateContent = "Testing text-to-speech functionality";
+
+		//Create an audio element to play the response
+		const audioElement = document.createElement("audio");
+		audioElement.controls = false;
+		audioElement.style.display = "none";
+		document.body.appendChild(audioElement);
+		
+		// Add event listeners for tracking playback
+		audioElement.addEventListener("play", () => {
+			console.log("TTS audio playback started");
+		});
+		
+		audioElement.addEventListener("ended", () => {
+			console.log("TTS audio playback completed");
+			// Remove the audio element after playback
+			document.body.removeChild(audioElement);
+		});
+		
+		audioElement.addEventListener("error", (e) => {
+			console.error("Audio playback error:", e);
+			document.body.removeChild(audioElement);
+		});
+		const response = await fetch(
+			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
+			// Uncomment the line below, and comment the line above to test locally
+			// 'http://localhost:3000/api/tts',
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ narrate_Content: narrateContent }),
+			}
+		);
+
+		if (!response.ok) {
+			throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+		  }
+		  
+		  // Create a URL for the audio blob
+		  const audioBlob = await response.blob();
+		  const audioUrl = URL.createObjectURL(audioBlob);
+		  
+		  // Set the source and play
+		  audioElement.src = audioUrl;
+		  await audioElement.play();
+		  
+		  console.log("Playing TTS audio");
+		  
+	} catch (error) {
+		console.error("Error in textToSpeech function:", error);
+	}
 }
