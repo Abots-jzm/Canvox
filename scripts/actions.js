@@ -236,14 +236,10 @@ function extensionActionRouter(destination) {
 			window.toggleMicrophone(); // Call the function to toggle the microphone state
 			break;
 		case "volume up":
-			// Handle volume up action
-			console.log("Increasing volume");
-			// Implement the logic to increase volume
-			break;
 		case "volume down":
-			// Handle volume down action
-			console.log("Decreasing volume");
-			// Implement the logic to decrease volume
+		case "volume mute":
+			// Handle volume adjustment actions
+			window.adjustVolume(destination);
 			break;
 		case "toggletranscript":
 			// Handle toggle transcript action
