@@ -232,8 +232,8 @@ function extensionActionRouter(destination) {
 
 	switch (destination) {
 		case "micmute":
-			console.log("Toggling microphone mute");
 			// Handle microphone mute action
+			window.toggleMicrophone(); // Call the function to toggle the microphone state
 			break;
 		case "volume up":
 			// Handle volume up action
@@ -247,7 +247,7 @@ function extensionActionRouter(destination) {
 			break;
 		case "toggletranscript":
 			// Handle toggle transcript action
-			console.log("Toggling transcript visibility");
+			window.toggleTranscript(); // Call the function to toggle the transcript visibility
 			break;
 		default:
 			return false; // Not an extension action
