@@ -15,6 +15,9 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
+	//R
+	if (handleCanvasInputCommands(transcript)) return; 
+	
 	const destination = extractDestination(transcript);
 	if (destination) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
@@ -30,6 +33,45 @@ function actions(transcript) {
 		useGPT(transcript);
 	}
 }
+
+//R
+function handleDiscussionBoxCommand(transcript) {
+	// 1. Extract text from commands
+
+	const match = transcript.match(/(?:type|paste|write|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)\s+(.+)/i);
+   
+	if (!match) return false; // Not a discussion box command
+	 const textToPaste = match[1].trim();
+	if (!textToPaste) return false;
+	 // 2. Find the Canvas editor iframe
+	const iframe = document.querySelector('iframe.tox-edit-area__iframe, #message-body-root_ifr');
+	if (!iframe) {
+	  console.warn("Canvas editor not found - are you on a discussion page?");
+	  return false;
+	}
+	 try {
+	  // 3. Focus the editor 
+	  iframe.focus();
+	  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+	 
+	  // 4. Find or create the paragraph element
+	  let paragraph = iframeDoc.querySelector('p');
+	  
+	   // 5. Insert text and trigger all necessary events
+	  paragraph.textContent = textToPaste;
+	 
+	  // These events make Canvas detect the changes
+	  ['input', 'change', 'keydown', 'keyup', 'blur'].forEach(eventType => {
+		paragraph.dispatchEvent(new Event(eventType, { bubbles: true }));
+	  });
+	   console.log("Success! Pasted:", textToPaste);
+	  return true;
+	 } catch (error) {
+	  console.error("Failed to paste text:", error);
+	  return false;
+	}
+  }
+ 
 
 // This function uses RegEx to extract a destination from the user's voice input. It looks for various patterns that indicate what the user wants to do, such as "go to", "show me", "click", etc. If it finds a match, it cleans up the extracted text and returns it as the destination. If no match is found, it returns undefined.
 function extractDestination(transcript) {
