@@ -1,3 +1,6 @@
+// This script handles the actions for navigating the sidebar based on user voice input. Think of it as the "brain" of the extension. It will contain most of the logic for interpreting user commands and deciding what to do with them.
+
+// This list is neccessary to give GPT a better idea of what the user might be trying to say. It contains all the possible sidebar destinations that we can navigate to. This is used when we can't find a match using RegEx, and we need to call GPT to interpret the user's command.
 const POSSIBLE_SIDEBAR_DESTINATIONS = [
 	"home",
 	"dashboard",
@@ -10,6 +13,7 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 	"back",
 ];
 
+// This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	const destination = extractDestination(transcript);
 	if (destination) {
@@ -27,6 +31,7 @@ function actions(transcript) {
 	}
 }
 
+// This function uses RegEx to extract a destination from the user's voice input. It looks for various patterns that indicate what the user wants to do, such as "go to", "show me", "click", etc. If it finds a match, it cleans up the extracted text and returns it as the destination. If no match is found, it returns undefined.
 function extractDestination(transcript) {
 	// The following code makes tries to do as much as possible locally before falling back to the chatgpt server.
 	// RegEx = Regular Expression, test here https://regex101.com/
@@ -79,7 +84,7 @@ function extractDestination(transcript) {
 	return destination;
 }
 
-// Collects all unique link texts from the page, removing duplicates and substrings
+// This function collects all unique link texts from the page, removing duplicates and substrings. It basically extracts all the possible navigation destinations for chatGPT to consider when interpreting the user's command. It excludes links from the right-side-wrapper to avoid cluttering the results with irrelevant links.
 function collectUniqueDestinations() {
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
 	if (!layoutWrapper) return [];
@@ -149,6 +154,7 @@ function collectUniqueDestinations() {
 	return filteredTexts;
 }
 
+// This is the function that handles calling the GPT API to interpret the user's command when RegEx fails to find a match. It sends the user's voice input and the possible destinations to the API, and then processes the response to navigate to the appropriate destination. If the API call fails, it logs the error to the console.
 async function useGPT(transcript) {
 	// If the RegEx fails to match,
 	// we can fallback to a GPT check
@@ -191,6 +197,7 @@ async function useGPT(transcript) {
 	}
 }
 
+// This is the function that handles the actual navigation based on the destination extracted from the user's voice input. It selects all links in the layout wrapper and searches for a link that matches the destination. If it finds a match, it simulates a click on that link to navigate to the corresponding page. If no matching link is found, it returns false.
 function navigate(destination) {
 	//select all links in the layout wrapper
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");

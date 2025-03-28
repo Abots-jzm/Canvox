@@ -1,6 +1,10 @@
+// This is the entry point for the content script of the Canvox extension. It initializes speech recognition, handles hotkeys, and manages microphone state.
+// It also listens for messages from the popup and updates the UI accordingly.
 (function () {
 	const { speechDisplay, speechContainer } = window.injectElements();
 
+	// Check if the browser supports the SpeechRecognition API
+	// If not, exit early to avoid errors
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	if (!SpeechRecognition) return;
 
@@ -59,13 +63,12 @@
 			try {
 				// Use the SpeechRecognition API's mediaDeviceId option if supported
 				recognition.mediaDeviceId = deviceId;
-				console.log("Set microphone to device ID:", deviceId);
 			} catch (e) {
 				console.warn("This browser doesn't support selecting audio input devices for SpeechRecognition:", e);
 			}
 		}
 
-		// Set up the event handlers for the new recognition instance
+		// This event is fired when speech recognition starts
 		recognition.onresult = (event) => {
 			let transcript = "";
 			for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -73,12 +76,17 @@
 			}
 			speechDisplay.textContent = transcript;
 
+			// We want to wait a bit before sending the transcript to actions to avoid flooding it with too many calls
+			// This debounce mechanism ensures that we only call actions once the user has paused speaking
 			clearTimeout(window.debounceTimer);
 			window.debounceTimer = setTimeout(() => {
+				// IMPORTANT: This is where we call pass control to the actions.js script
+				// to handle the speech commands. The actions function should be defined in actions.js.
 				window.actions(transcript);
 			}, 1000);
 		};
 
+		// This event is fired when speech recognition detects no speech for a while and stops
 		recognition.onend = () => {
 			isRecognizing = false;
 			// Update storage when recognition ends
@@ -92,7 +100,10 @@
 			chrome.storage.sync.set({ microphoneActive: false });
 		};
 
-		// If it was active before, restart it
+		// Start recognition if it was previously active
+		// This ensures that if the user had the microphone active before, it will restart automatically
+		// We can decide to remove this if we want to avoid auto-starting recognition on page load
+		// but for now, it provides a smoother user experience
 		if (isRecognizing) {
 			try {
 				recognition.start();
@@ -122,13 +133,20 @@
 			}
 		}
 
-		// Update the storage to keep popup UI in sync
-		chrome.storage.sync.set({ microphoneActive: isRecognizing }, () => {
-			console.log("Microphone Status (from content):", isRecognizing);
-		});
+		// Update the storage to keep popup UI in sync. So that when the user presses hotkey, the popup reflects the correct state
+		// of the microphone (active/inactive).
+		chrome.storage.sync.set({ microphoneActive: isRecognizing });
 	}
 
-	// Helper function to check if a keydown event matches the hotkey
+	/**
+	 * Determines if a keyboard event matches the configured hotkey
+	 * This function supports two formats of hotkey configuration:
+	 * 1. Legacy format (simple string) - for single-key shortcuts
+	 * 2. Object format - for complex shortcuts with modifier keys
+	 *
+	 * This dual support allows backward compatibility while enabling
+	 * more advanced keyboard combinations.
+	 */
 	function isHotkeyMatch(event, hotkey) {
 		// Handle legacy format (string)
 		if (typeof hotkey === "string") {
@@ -136,33 +154,42 @@
 		}
 
 		// New format (object with modifiers)
+		// Ensure the hotkey object has a key property to prevent errors
 		return (
 			(!hotkey.ctrl || event.ctrlKey) &&
 			(!hotkey.alt || event.altKey) &&
 			(!hotkey.shift || event.shiftKey) &&
-			event.key.toLowerCase() === hotkey.key.toLowerCase()
+			event.key.toLowerCase() === (hotkey.key || "").toLowerCase()
 		);
 	}
 
-	// Listen for hotkey presses
+	/**
+	 * Global keyboard shortcut handler
+	 * We use document-level event listener to capture keypresses anywhere on the page,
+	 * regardless of which element has focus, ensuring consistent access to functionality.
+	 */
 	document.addEventListener("keydown", (e) => {
-		// Microphone hotkey
+		// Microphone hotkey - dynamically fetch user preference to respect any settings
+		// changes without requiring page reload
 		getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone).then((hotkey) => {
 			if (isHotkeyMatch(e, hotkey)) {
 				toggleMicrophone();
-				e.preventDefault();
+				e.preventDefault(); // Prevent browser's default handling of this key
 			}
 		});
 
-		// Transcript hotkey
+		// Transcript visibility hotkey - toggle the transcript panel's visibility
+		// This is kept separate from microphone control to allow independent operation
 		getSettingWithDefault("hotkeyTranscript", DEFAULT_SETTINGS.hotkeyTranscript).then((hotkey) => {
 			if (isHotkeyMatch(e, hotkey)) {
 				window.toggleTranscript();
-				e.preventDefault();
+				e.preventDefault(); // Prevent browser's default handling of this key
 			}
 		});
 	});
 
+	// Listen for input from the text area to allow manual input of speech commands
+	// This is for users who may not want to use the microphone or have accessibility needs
 	document.querySelector(".voice-input").addEventListener("keydown", (e) => {
 		if (e.key === "Enter") {
 			window.actions(e.target.value);
