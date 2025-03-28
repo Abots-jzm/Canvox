@@ -138,6 +138,8 @@
 		chrome.storage.sync.set({ microphoneActive: isRecognizing });
 	}
 
+	window.toggleMicrophone = toggleMicrophone; // Expose the function to the global scope for use in popup or other scripts
+
 	/**
 	 * Determines if a keyboard event matches the configured hotkey
 	 * This function supports two formats of hotkey configuration:

@@ -23,8 +23,8 @@ function actions(transcript) {
 
 		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
 			// If the destination is related to microphone, volume, or transcript, trigger the action directly
-			// TODO: Implement the actions for these destinations
-			console.log("triggering actions with destination:", destination);
+			// Call the extension action router to handle specific actions'
+			extensionActionRouter(destination);
 			return;
 		}
 
@@ -99,7 +99,6 @@ function extractDestination(transcript) {
 		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
 	}
 	else if ((match = toggleTranscript.exec(transcript))) {
-		console.log("got to toggletranscript destination");
 		destination = "toggletranscript";
 	}
 
@@ -227,7 +226,35 @@ async function useGPT(transcript) {
 	}
 }
 
-// This is the function that handles the actual navigation based on the destination extracted from the user's voice input. It selects all links in the layout wrapper and searches for a link that matches the destination. If it finds a match, it simulates a click on that link to navigate to the corresponding page. If no matching link is found, it returns false.
+function extensionActionRouter(destination) {
+	// This function routes to extension-specific actions
+	// based on the destination provided
+
+	switch (destination) {
+		case "micmute":
+			console.log("Toggling microphone mute");
+			// Handle microphone mute action
+			break;
+		case "volume up":
+			// Handle volume up action
+			console.log("Increasing volume");
+			// Implement the logic to increase volume
+			break;
+		case "volume down":
+			// Handle volume down action
+			console.log("Decreasing volume");
+			// Implement the logic to decrease volume
+			break;
+		case "toggletranscript":
+			// Handle toggle transcript action
+			console.log("Toggling transcript visibility");
+			break;
+		default:
+			return false; // Not an extension action
+	}
+	return true; // Successfully handled an extension action
+}
+
 function navigate(destination) {
 	//select all links in the layout wrapper
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
