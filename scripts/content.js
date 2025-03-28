@@ -140,6 +140,42 @@
 
 	window.toggleMicrophone = toggleMicrophone; // Expose the function to the global scope for use in popup or other scripts
 
+	// Function to adjust volume
+	function adjustVolume(destination) {
+		// This function can be used to adjust the volume of the speech synthesis or any other audio output
+		// For now, it's a placeholder as SpeechRecognition doesn't have a direct volume control
+		// You can implement this based on your requirements
+
+		let action;
+		let currVol;
+		let newVol;
+
+		// Get the current volume from storage
+		chrome.storage.sync.get("volume", (data) => {
+			currVol = data.volume // Log the current volume for debugging
+			console.log(`Current volume 1: ${currVol}`); // Log the current volume for debugging
+			if (currVol === undefined) {
+				// If volume is not set, default to 50
+				currVol = DEFAULT_SETTINGS.volume;
+			}
+		});
+
+		setTimeout((function(){
+			action = destination.split(" ")[1]; // Extract the volume change from the destination string
+			if (action == "mute"){
+				newVol = 0;
+			} else if (action == "up"){
+				newVol = Math.min(100, currVol + 10); // Increase volume by 10, max 100
+			} else if (action == "down"){
+				newVol = Math.max(0, currVol - 10); // Decrease volume by 10, min 0
+			}
+
+			chrome.storage.sync.set({volume: newVol});		
+		}), 100); // Change newVol and store after a short delay to ensure currVol is set correctly
+	}
+
+	window.adjustVolume = adjustVolume;
+
 	/**
 	 * Determines if a keyboard event matches the configured hotkey
 	 * This function supports two formats of hotkey configuration:
