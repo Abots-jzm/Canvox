@@ -12,6 +12,14 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 
 function actions(transcript) {
 	const destination = extractDestination(transcript);
+
+	// Handles narration requests
+	if (destination === "narrate") {
+		textToSpeech(transcript);
+		return;
+	}
+
+	// Handles navigation requests
 	if (destination) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
@@ -69,6 +77,8 @@ function extractDestination(transcript) {
 		destination = match[1];
 	} else if ((match = directCommands.exec(transcript))) {
 		destination = match[1];
+	} else if ((match = narrateContent.exec(transcript))) {
+		return "narrate";
 	}
 	// If there was a RegEx match,
 	// remove words like "please", "pls", "plz".
