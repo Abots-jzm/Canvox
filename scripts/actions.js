@@ -13,8 +13,16 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 function actions(transcript) {
 	const destination = extractDestination(transcript);
 	if (destination) {
+		// Check if the destination is a sidebar action
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
+
+		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
+			// If the destination is related to microphone, volume, or transcript, trigger the action directly
+			// TODO: Implement the actions for these destinations
+			console.log("triggering actions with destination:", destination);
+			return;
+		}
 
 		const navigationSuccessful = navigate(destination, transcript);
 		if (!navigationSuccessful) {
@@ -50,6 +58,17 @@ function extractDestination(transcript) {
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
 
+	// Extension actions - "mute microphone", "volume up", etc.
+	// Pattern 8: microphone mute
+	const microphoneMute =
+		/(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
+	// Pattern 9: Volume mute, up, down
+	const volumeChange =
+		/(turn|change)?\s*volume\s+(up|down|mute)/i;
+	// Pattern 10: Toggle transcript
+	const toggleTranscript =
+		/(hide|toggle)\s+transcript/i;
+
 	let match;
 	let destination;
 
@@ -66,6 +85,17 @@ function extractDestination(transcript) {
 		destination = match[1];
 	} else if ((match = directCommands.exec(transcript))) {
 		destination = match[1];
+	}
+
+	// Assign extension-related actions
+	else if ((match = microphoneMute.exec(transcript))) {
+		destination = "micmute";
+	} else if ((match = volumeChange.exec(transcript))) {
+		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
+	}
+	else if ((match = toggleTranscript.exec(transcript))) {
+		console.log("got to toggletranscript destination");
+		destination = "toggletranscript";
 	}
 
 	// If there was a RegEx match,
