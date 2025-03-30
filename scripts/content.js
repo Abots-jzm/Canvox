@@ -169,6 +169,35 @@
 		}
 	});
 
+	// Listen for the TTS events
+    document.addEventListener('tts-ready', async (event) => {
+        const audioElement = event.detail.audioElement;
+        
+        // Add event listeners for tracking playback
+        audioElement.addEventListener("play", () => {
+            console.log("TTS audio playback started");
+        });
+        
+        audioElement.addEventListener("ended", () => {
+            console.log("TTS audio playback completed");
+            // Remove the audio element after playback
+            document.body.removeChild(audioElement);
+        });
+        
+        audioElement.addEventListener("error", (e) => {
+            console.error("Audio playback error:", e);
+            document.body.removeChild(audioElement);
+        });
+        
+        // Start playing the audio
+        try {
+            await audioElement.play();
+            console.log("Playing TTS audio");
+        } catch (error) {
+            console.error("Error playing TTS audio:", error);
+        }
+    });
+
 	// Listen for changes to the microphone state from the popup
 	chrome.storage.onChanged.addListener((changes) => {
 		if (changes.microphoneActive && changes.microphoneActive.newValue !== isRecognizing) {

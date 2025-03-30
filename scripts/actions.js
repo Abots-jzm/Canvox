@@ -192,10 +192,16 @@ async function useGPT(transcript) {
 				.replace(/^["']|["']$/g, "")
 				.toLowerCase();
 			console.log("Destination from GPT:", destination);
-			// After getting the destination, trigger navigation
-			const wasASidebarAction = window.sidebarActionsRouter(destination);
-			if (!wasASidebarAction) {
-				navigate(destination, transcript);
+
+			// Check if destination is a narration request
+			if (destination === "narrate") {
+				textToSpeech(transcript);
+			} else {
+				// After getting the destination, trigger navigation
+				const wasASidebarAction = window.sidebarActionsRouter(destination);
+				if (!wasASidebarAction) {
+					navigate(destination, transcript);
+				}
 			}
 		}
 	} catch (error) {
@@ -245,21 +251,7 @@ async function textToSpeech(transcript) {
 		audioElement.style.display = "none";
 		document.body.appendChild(audioElement);
 		
-		// Add event listeners for tracking playback
-		audioElement.addEventListener("play", () => {
-			console.log("TTS audio playback started");
-		});
 		
-		audioElement.addEventListener("ended", () => {
-			console.log("TTS audio playback completed");
-			// Remove the audio element after playback
-			document.body.removeChild(audioElement);
-		});
-		
-		audioElement.addEventListener("error", (e) => {
-			console.error("Audio playback error:", e);
-			document.body.removeChild(audioElement);
-		});
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
 			// Uncomment the line below, and comment the line above to test locally
@@ -283,7 +275,9 @@ async function textToSpeech(transcript) {
 		  audioElement.src = audioUrl;
 		  await audioElement.play();
 		  
-		  console.log("Playing TTS audio");
+		  // Dispatch a custom event that content.js will listen for
+		  const ttsEvent = new CustomEvent('tts-ready', { detail: { audioElement } });
+		  document.dispatchEvent(ttsEvent);
 		  
 	} catch (error) {
 		console.error("Error in textToSpeech function:", error);
