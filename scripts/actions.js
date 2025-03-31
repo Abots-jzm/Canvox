@@ -16,7 +16,7 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	//R
-	if (handleCanvasInputCommands(transcript)) return; 
+	if (handleDiscussionBoxCommand(transcript)) return; 
 	
 	const destination = extractDestination(transcript);
 	if (destination) {
@@ -37,8 +37,8 @@ function actions(transcript) {
 //R
 function handleDiscussionBoxCommand(transcript) {
 	// 1. Extract text from commands
-
-	const match = transcript.match(/(?:type|paste|write|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)\s+(.+)/i);
+	const inputRegex = /(?:type|paste|write|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)\s+(.+)/i;
+	const match = inputRegex.exec(transcript);
    
 	if (!match) return false; // Not a discussion box command
 	 const textToPaste = match[1].trim();
