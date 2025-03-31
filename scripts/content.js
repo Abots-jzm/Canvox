@@ -1,6 +1,32 @@
 (function () {
 	const { speechDisplay, speechContainer } = window.injectElements();
 
+	// Check for navigation confirmation messages
+	function checkNavigationMessages() {
+		try {
+			const navigationData = sessionStorage.getItem('canvoxNavigation');
+			if (navigationData) {
+				const { message, timestamp } = JSON.parse(navigationData);
+				
+				// Only process messages that are less than 5 seconds old
+				if (Date.now() - timestamp < 5000) {
+					// Play the confirmation message
+					setTimeout(() => {
+						textToSpeech(message);
+					}, 500); // Small delay to ensure the page has loaded
+				}
+				
+				// Clear the message after processing
+				sessionStorage.removeItem('canvoxNavigation');
+			}
+		} catch (error) {
+			console.error("Error processing navigation message:", error);
+		}
+	}
+	
+	// Call this when the content script initializes
+	checkNavigationMessages();
+
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	if (!SpeechRecognition) return;
 
