@@ -13,6 +13,14 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 	"back",
 ];
 
+const POSSIBLE_EXTENSION_ACTIONS = [
+	"micmute",
+	"volume up",
+	"volume down",
+	"volume mute",
+	"toggletranscript",
+]
+
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	const destination = extractDestination(transcript);
@@ -190,7 +198,7 @@ async function useGPT(transcript) {
 		console.log("Calling API...");
 
 		// Collect possible destinations to help GPT make better decisions
-		const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...collectUniqueDestinations()];
+		const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...POSSIBLE_EXTENSION_ACTIONS, ...collectUniqueDestinations()];
 		console.log("Possible destinations:", possibleDestinations);
 
 		const response = await fetch(
@@ -216,7 +224,8 @@ async function useGPT(transcript) {
 			console.log("Destination from GPT:", destination);
 			// After getting the destination, trigger navigation
 			const wasASidebarAction = window.sidebarActionsRouter(destination);
-			if (!wasASidebarAction) {
+			const wasAnExtensionAction = extensionActionRouter(destination);
+			if (!wasASidebarAction && !wasAnExtensionAction) {
 				navigate(destination, transcript);
 			}
 		}
