@@ -59,26 +59,35 @@ function extractDestination(transcript) {
 	// Pattern 5: Conversational - "I need to see my X", etc.
 	const conversationalPhrases =
 		/(?:I\s+(?:need|want)\s+to\s+(?:see|check)(?:\s+my)?|let\s+me\s+see(?:\s+what)?|show\s+me\s+what(?:\s+I'm)?)\s+([a-z0-9\s]+)/i;
-	// Pattern 7: Click/Press actions - "click X", "press X", etc.
+	// Pattern 6: Click/Press actions - "click X", "press X", etc.
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
 
 	// Extension actions - "mute microphone", "volume up", etc.
-	// Pattern 8: microphone mute
+	// Pattern 7: microphone mute
 	const microphoneMute =
 		/(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
-	// Pattern 9: Volume mute, up, down
+	// Pattern 8: Volume mute, up, down
 	const volumeChange =
 		/(turn|change)?\s*volume\s+(up|down|mute)/i;
-	// Pattern 10: Toggle transcript
+	// Pattern 9: Toggle transcript
 	const toggleTranscript =
-		/(hide|toggle)\s+transcript/i;
+		/(show|hide|toggle)\s+transcript/i;
 
 	let match;
 	let destination;
 
+	// Assign extension-related actions
+	if ((match = microphoneMute.exec(transcript))) {
+		destination = "micmute";
+	} else if ((match = volumeChange.exec(transcript))) {
+		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
+	} else if ((match = toggleTranscript.exec(transcript))) {
+		destination = "toggletranscript";
+	}
+
 	// Assigns an action to an according
-	if ((match = contextNavigation.exec(transcript))) {
+	else if ((match = contextNavigation.exec(transcript))) {
 		destination = match[1];
 	} else if ((match = clickPressActions.exec(transcript))) {
 		destination = match[1];
@@ -90,16 +99,6 @@ function extractDestination(transcript) {
 		destination = match[1];
 	} else if ((match = directCommands.exec(transcript))) {
 		destination = match[1];
-	}
-
-	// Assign extension-related actions
-	else if ((match = microphoneMute.exec(transcript))) {
-		destination = "micmute";
-	} else if ((match = volumeChange.exec(transcript))) {
-		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
-	}
-	else if ((match = toggleTranscript.exec(transcript))) {
-		destination = "toggletranscript";
 	}
 
 	// If there was a RegEx match,
