@@ -15,15 +15,17 @@ function actions(transcript) {
 
 	// Handles narration requests
 	if (destination === "narrate") {
-		textToSpeech(transcript);
+		textToSpeech("Calling text to speech from actions.");
 		return;
 	}
 
 	// Handles navigation requests
 	if (destination) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
-		if (wasASidebarAction) return;
-
+		if (wasASidebarAction) {
+			textToSpeech(`Opened ${destination}`);
+			return;
+		}
 		const navigationSuccessful = navigate(destination, transcript);
 		if (!navigationSuccessful) {
 			// Only call useGPT if navigation failed
@@ -195,7 +197,7 @@ async function useGPT(transcript) {
 
 			// Check if destination is a narration request
 			if (destination === "narrate") {
-				textToSpeech(transcript);
+				textToSpeech("Calling text to speech from use GPT.");
 			} else {
 				// After getting the destination, trigger navigation
 				const wasASidebarAction = window.sidebarActionsRouter(destination);
@@ -221,6 +223,7 @@ function navigate(destination) {
 			(link.title && link.title.toLowerCase().includes(destination))
 		) {
 			link.click();
+			textToSpeech(`Opened ${destination}`);
 			return true;
 		}
 
@@ -230,6 +233,7 @@ function navigate(destination) {
 				(child.title && child.title.toLowerCase().includes(destination))
 			) {
 				link.click();
+				textToSpeech(`Opened ${destination}`);
 				return true;
 			}
 		}
@@ -239,18 +243,15 @@ function navigate(destination) {
 	return false;
 }
 
-async function textToSpeech(transcript) {
+async function textToSpeech(narrateContent) {
 	try {
 		console.log("Calling API (TTS)...");
-		
-		const narrateContent = "Testing text-to-speech functionality";
 
-		//Create an audio element to play the response
+		// Create an audio element to play the response
 		const audioElement = document.createElement("audio");
 		audioElement.controls = false;
 		audioElement.style.display = "none";
 		document.body.appendChild(audioElement);
-		
 		
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
@@ -265,20 +266,20 @@ async function textToSpeech(transcript) {
 
 		if (!response.ok) {
 			throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-		  }
-		  
-		  // Create a URL for the audio blob
-		  const audioBlob = await response.blob();
-		  const audioUrl = URL.createObjectURL(audioBlob);
-		  
-		  // Set the source and play
-		  audioElement.src = audioUrl;
-		  await audioElement.play();
-		  
-		  // Dispatch a custom event that content.js will listen for
-		  const ttsEvent = new CustomEvent('tts-ready', { detail: { audioElement } });
-		  document.dispatchEvent(ttsEvent);
-		  
+		}
+		
+		// Create a URL for the audio blob
+		const audioBlob = await response.blob();
+		const audioUrl = URL.createObjectURL(audioBlob);
+		
+		// Set the source and play
+		audioElement.src = audioUrl;
+		await audioElement.play();
+		
+		// Dispatch a custom event that content.js will listen for
+		const ttsEvent = new CustomEvent('tts-ready', { detail: { audioElement } });
+		document.dispatchEvent(ttsEvent);
+		
 	} catch (error) {
 		console.error("Error in textToSpeech function:", error);
 	}
