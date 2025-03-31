@@ -17,8 +17,16 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 function actions(transcript) {
 	const destination = extractDestination(transcript);
 	if (destination) {
+		// Check if the destination is a sidebar action
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
 		if (wasASidebarAction) return;
+
+		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
+			// If the destination is related to microphone, volume, or transcript, trigger the action directly
+			// Call the extension action router to handle specific actions'
+			extensionActionRouter(destination);
+			return;
+		}
 
 		const navigationSuccessful = navigate(destination, transcript);
 		if (!navigationSuccessful) {
@@ -51,15 +59,35 @@ function extractDestination(transcript) {
 	// Pattern 5: Conversational - "I need to see my X", etc.
 	const conversationalPhrases =
 		/(?:I\s+(?:need|want)\s+to\s+(?:see|check)(?:\s+my)?|let\s+me\s+see(?:\s+what)?|show\s+me\s+what(?:\s+I'm)?)\s+([a-z0-9\s]+)/i;
-	// Pattern 7: Click/Press actions - "click X", "press X", etc.
+	// Pattern 6: Click/Press actions - "click X", "press X", etc.
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
+
+	// Extension actions - "mute microphone", "volume up", etc.
+	// Pattern 7: microphone mute
+	const microphoneMute =
+		/(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
+	// Pattern 8: Volume mute, up, down
+	const volumeChange =
+		/(turn|change)?\s*volume\s+(up|down|mute)/i;
+	// Pattern 9: Toggle transcript
+	const toggleTranscript =
+		/(show|hide|toggle)\s+transcript/i;
 
 	let match;
 	let destination;
 
+	// Assign extension-related actions
+	if ((match = microphoneMute.exec(transcript))) {
+		destination = "micmute";
+	} else if ((match = volumeChange.exec(transcript))) {
+		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
+	} else if ((match = toggleTranscript.exec(transcript))) {
+		destination = "toggletranscript";
+	}
+
 	// Assigns an action to an according
-	if ((match = contextNavigation.exec(transcript))) {
+	else if ((match = contextNavigation.exec(transcript))) {
 		destination = match[1];
 	} else if ((match = clickPressActions.exec(transcript))) {
 		destination = match[1];
@@ -197,7 +225,31 @@ async function useGPT(transcript) {
 	}
 }
 
-// This is the function that handles the actual navigation based on the destination extracted from the user's voice input. It selects all links in the layout wrapper and searches for a link that matches the destination. If it finds a match, it simulates a click on that link to navigate to the corresponding page. If no matching link is found, it returns false.
+function extensionActionRouter(destination) {
+	// This function routes to extension-specific actions
+	// based on the destination provided
+
+	switch (destination) {
+		case "micmute":
+			// Handle microphone mute action
+			window.toggleMicrophone(); // Call the function to toggle the microphone state
+			break;
+		case "volume up":
+		case "volume down":
+		case "volume mute":
+			// Handle volume adjustment actions
+			window.adjustVolume(destination);
+			break;
+		case "toggletranscript":
+			// Handle toggle transcript action
+			window.toggleTranscript(); // Call the function to toggle the transcript visibility
+			break;
+		default:
+			return false; // Not an extension action
+	}
+	return true; // Successfully handled an extension action
+}
+
 function navigate(destination) {
 	//select all links in the layout wrapper
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
