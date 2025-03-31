@@ -11,30 +11,34 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 ];
 
 function actions(transcript) {
-	const destination = extractDestination(transcript);
+    const destination = extractDestination(transcript);
 
-	// Handles narration requests
-	if (destination === "narrate") {
-		textToSpeech("Calling text to speech from actions.");
-		return;
-	}
+    // Handles narration requests
+    if (destination === "narrate") {
+        textToSpeech("Calling text to speech from actions.");
+        return;
+    }
 
-	// Handles navigation requests
-	if (destination) {
-		const wasASidebarAction = window.sidebarActionsRouter(destination);
-		if (wasASidebarAction) {
-			textToSpeech(`Opened ${destination}`);
-			return;
-		}
-		const navigationSuccessful = navigate(destination, transcript);
-		if (!navigationSuccessful) {
-			// Only call useGPT if navigation failed
-			useGPT(transcript);
-		}
-	} else {
-		// No destination was found, use GPT to interpret
-		useGPT(transcript);
-	}
+    // Handles navigation requests
+    if (destination) {
+        const wasASidebarAction = window.sidebarActionsRouter(destination);
+        if (wasASidebarAction) {
+            // Store the confirmation message in sessionStorage
+            sessionStorage.setItem('canvoxNavigation', JSON.stringify({
+                message: `Opened ${destination}`,
+                timestamp: Date.now()
+            }));
+            return;
+        }
+        const navigationSuccessful = navigate(destination, transcript);
+        if (!navigationSuccessful) {
+            // Only call useGPT if navigation failed
+            useGPT(transcript);
+        }
+    } else {
+        // No destination was found, use GPT to interpret
+        useGPT(transcript);
+    }
 }
 
 function extractDestination(transcript) {
@@ -212,35 +216,47 @@ async function useGPT(transcript) {
 }
 
 function navigate(destination) {
-	//select all links in the layout wrapper
-	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
-	const links = layoutWrapper ? layoutWrapper.querySelectorAll("a") : [];
+    //select all links in the layout wrapper
+    const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
+    const links = layoutWrapper ? layoutWrapper.querySelectorAll("a") : [];
 
-	//search for the appropriate link and navigate
-	for (const link of links) {
-		if (
-			link.textContent.toLowerCase().includes(destination) ||
-			(link.title && link.title.toLowerCase().includes(destination))
-		) {
-			link.click();
-			textToSpeech(`Opened ${destination}`);
-			return true;
-		}
+    //search for the appropriate link and navigate
+    for (const link of links) {
+        if (
+            link.textContent.toLowerCase().includes(destination) ||
+            (link.title && link.title.toLowerCase().includes(destination))
+        ) {
+            // Store the confirmation message in sessionStorage for audio confirmation
+            sessionStorage.setItem('canvoxNavigation', JSON.stringify({
+                message: `Opened ${destination}`,
+                timestamp: Date.now()
+            }));
+            
+            // Then navigate
+            link.click();
+            return true;
+        }
 
-		for (const child of link.children) {
-			if (
-				child.textContent.toLowerCase().includes(destination) ||
-				(child.title && child.title.toLowerCase().includes(destination))
-			) {
-				link.click();
-				textToSpeech(`Opened ${destination}`);
-				return true;
-			}
-		}
-	}
+        for (const child of link.children) {
+            if (
+                child.textContent.toLowerCase().includes(destination) ||
+                (child.title && child.title.toLowerCase().includes(destination))
+            ) {
+                // Store the confirmation message in sessionStorage for audio confirmation
+                sessionStorage.setItem('canvoxNavigation', JSON.stringify({
+                    message: `Opened ${destination}`,
+                    timestamp: Date.now()
+                }));
+                
+                // Then navigate
+                link.click();
+                return true;
+            }
+        }
+    }
 
-	// No matching link found
-	return false;
+    // No matching link found
+    return false;
 }
 
 async function textToSpeech(narrateContent) {
