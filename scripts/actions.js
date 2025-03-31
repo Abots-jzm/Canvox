@@ -276,6 +276,78 @@ function navigate(destination) {
 		}
 	}
 
-	// No matching link found
+	// No- matching link found
 	return false;
+	window.showNotificationPopup = function (message) {
+	// Remove any existing popup
+	const existingPopup = document.querySelector("#voice-extension-popup");
+	if (existingPopup) existingPopup.remove();
+
+	// Create popup element
+	const popup = document.createElement("div");
+	popup.id = "voice-extension-popup";
+	popup.textContent = message;
+	popup.style.position = "fixed";
+	popup.style.bottom = "30px";
+	popup.style.right = "30px";
+	popup.style.backgroundColor = "#333";
+	popup.style.color = "#fff";
+	popup.style.padding = "12px 18px";
+	popup.style.borderRadius = "10px";
+	popup.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+	popup.style.fontSize = "16px";
+	popup.style.zIndex = "9999";
+	popup.style.opacity = "0";
+	popup.style.transition = "opacity 0.3s ease";
+
+	document.body.appendChild(popup);
+
+	// Fade in
+	requestAnimationFrame(() => {
+		popup.style.opacity = "1";
+	});
+
+	// Auto-hide after 5 seconds
+	setTimeout(() => {
+		popup.style.opacity = "0";
+		setTimeout(() => popup.remove(), 300);
+	}, 5000);
+};
+window.readMessages = function (messages) {
+	const maxMessagesToRead = 5; // You can increase/decrease
+	const count = Math.min(messages.length, maxMessagesToRead);
+
+	for (let i = 0; i < count; i++) {
+		const msgText = messages[i].textContent.trim();
+		if (msgText) {
+			const utterance = new SpeechSynthesisUtterance(`Message ${i + 1}: ${msgText}`);
+			speechSynthesis.speak(utterance);
+		}
+	}
+};
+window.showNewMessages = function () {
+	const unreadMessages = document.querySelectorAll(".message.unread, .unread-message");
+	const count = unreadMessages.length;
+
+	let messageToSpeak = "";
+
+	if (count > 0) {
+		messageToSpeak = `You have ${count} new ${count === 1 ? "message" : "messages"} in your inbox. Reading them now.`;
+		window.readMessages(unreadMessages);
+	} else {
+		messageToSpeak = "You have no new messages at the moment.";
+	}
+
+	// Speak and show popup
+	const utterance = new SpeechSynthesisUtterance(messageToSpeak);
+	speechSynthesis.speak(utterance);
+	window.showNotificationPopup(messageToSpeak);
+
+	// Optional: bring inbox into view
+	const inboxSection = document.querySelector("#inbox");
+	if (inboxSection) {
+		inboxSection.scrollIntoView({ behavior: "smooth" });
+	}
+};
+
 }
