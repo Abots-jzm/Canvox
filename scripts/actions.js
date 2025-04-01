@@ -18,6 +18,7 @@ const POSSIBLE_EXTENSION_ACTIONS = [
 	"volume up",
 	"volume down",
 	"volume mute",
+	"volume [0-9]{1,3}",
 	"toggletranscript",
 ]
 
@@ -76,9 +77,12 @@ function extractDestination(transcript) {
 	const microphoneMute =
 		/(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
 	// Pattern 8: Volume mute, up, down
-	const volumeChange =
+	const volumeShift =
 		/(turn|change)?\s*volume\s+(up|down|mute)/i;
-	// Pattern 9: Toggle transcript
+	// Pattern 9: Set volume to specific number
+	const setVolume =
+		/(set|change)?\s*volume\s*(to|set)?\s*(\d+)/i;
+	// Pattern 10: Toggle transcript
 	const toggleTranscript =
 		/(show|hide|toggle)\s+transcript/i;
 
@@ -88,8 +92,10 @@ function extractDestination(transcript) {
 	// Assign extension-related actions
 	if ((match = microphoneMute.exec(transcript))) {
 		destination = "micmute";
-	} else if ((match = volumeChange.exec(transcript))) {
+	} else if ((match = volumeShift.exec(transcript))) {
 		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
+	} else if ((match = setVolume.exec(transcript))) {
+		destination = `volume ${match[match.length - 1]}`;
 	} else if ((match = toggleTranscript.exec(transcript))) {
 		destination = "toggletranscript";
 	}
@@ -238,6 +244,15 @@ function extensionActionRouter(destination) {
 	// This function routes to extension-specific actions
 	// based on the destination provided
 
+	// First check if destination is a volume set command
+	// since the case block would need 100 cases for each possible regex here
+	if (destination.match(/volume\s[0-9]+/)){
+		destination = destination.replace(/volume\s/, "")
+		window.setVolume(destination);
+		return true;
+	}
+
+	// Handle other extension actions
 	switch (destination) {
 		case "micmute":
 			// Handle microphone mute action
@@ -254,7 +269,7 @@ function extensionActionRouter(destination) {
 			window.toggleTranscript(); // Call the function to toggle the transcript visibility
 			break;
 		default:
-			return false; // Not an extension action
+			return false; // No matching action found
 	}
 	return true; // Successfully handled an extension action
 }
