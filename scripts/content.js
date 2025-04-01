@@ -3,6 +3,29 @@
 (function () {
 	const { speechDisplay, speechContainer } = window.injectElements();
 
+	// Check for navigation confirmation messages
+	function checkNavigationMessages() {
+		try {
+			const navigationData = sessionStorage.getItem("canvoxNavigation");
+			if (navigationData) {
+				const { message, timestamp } = JSON.parse(navigationData);
+
+				// Only process messages that are less than 5 seconds old
+				if (Date.now() - timestamp < 5000) {
+					// Play the confirmation message
+					setTimeout(() => {
+						textToSpeech(message);
+					}, 500); // Small delay to ensure the page has loaded
+				}
+
+				// Clear the message after processing
+				sessionStorage.removeItem("canvoxNavigation");
+			}
+		} catch (error) {
+			console.error("Error processing navigation message:", error);
+		}
+	}
+
 	// Check if the browser supports the SpeechRecognition API
 	// If not, exit early to avoid errors
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -10,6 +33,12 @@
 
 	let recognition = null;
 	let isRecognizing = false;
+
+	// Run the navigation message check when the page loads
+	checkNavigationMessages();
+
+	// Also check after any page state changes
+	window.addEventListener("popstate", checkNavigationMessages);
 
 	// Default settings (fallback in case defaults.js hasn't loaded)
 	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
@@ -152,26 +181,26 @@
 
 		// Get the current volume from storage
 		chrome.storage.sync.get("volume", (data) => {
-			currVol = data.volume // Retrieve current volume
+			currVol = data.volume; // Retrieve current volume
 			if (currVol === undefined) {
 				// If volume is not set, default to 50
 				currVol = DEFAULT_SETTINGS.volume;
 			}
 		});
 
-		setTimeout((function(){
+		setTimeout(function () {
 			action = destination.split(" ")[1]; // Extract the volume change from the destination string
-			if (action == "mute"){
+			if (action == "mute") {
 				newVol = 0;
-			} else if (action == "up"){
+			} else if (action == "up") {
 				newVol = Math.min(100, currVol + 10); // Increase volume by 10, max 100
-			} else if (action == "down"){
+			} else if (action == "down") {
 				newVol = Math.max(0, currVol - 10); // Decrease volume by 10, min 0
 			}
 
-			chrome.storage.sync.set({volume: newVol});		
+			chrome.storage.sync.set({ volume: newVol });
 			console.log(`New volume set to: ${newVol}`); // Log the new volume for debugging
-		}), 100); // Change newVol and store after a short delay to ensure currVol is set correctly
+		}, 100); // Change newVol and store after a short delay to ensure currVol is set correctly
 	}
 
 	window.adjustVolume = adjustVolume;
@@ -231,6 +260,35 @@
 	document.querySelector(".voice-input").addEventListener("keydown", (e) => {
 		if (e.key === "Enter") {
 			window.actions(e.target.value);
+		}
+	});
+
+	// Listen for the TTS events
+	document.addEventListener("tts-ready", async (event) => {
+		const audioElement = event.detail.audioElement;
+
+		// Add event listeners for tracking playback
+		audioElement.addEventListener("play", () => {
+			console.log("TTS audio playback started");
+		});
+
+		audioElement.addEventListener("ended", () => {
+			console.log("TTS audio playback completed");
+			// Remove the audio element after playback
+			document.body.removeChild(audioElement);
+		});
+
+		audioElement.addEventListener("error", (e) => {
+			console.error("Audio playback error:", e);
+			document.body.removeChild(audioElement);
+		});
+
+		// Start playing the audio
+		try {
+			await audioElement.play();
+			console.log("Playing TTS audio");
+		} catch (error) {
+			console.error("Error playing TTS audio:", error);
 		}
 	});
 
