@@ -10,6 +10,14 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 	"back",
 ];
 
+const POSSIBLE_EXTENSION_ACTIONS = [
+	"micmute",
+	"volume up",
+	"volume down",
+	"volume mute",
+	"toggletranscript",
+];
+
 function actions(transcript) {
     const destination = extractDestination(transcript);
 
@@ -32,11 +40,12 @@ function actions(transcript) {
             return;
         }
 
-        // Check if the destination is related to extension controls
-        const wasAnExtensionAction = extensionActionRouter(destination);
-        if (wasAnExtensionAction) {
-            return;
-        }
+        if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
+			// If the destination is related to microphone, volume, or transcript, trigger the action directly
+			// Call the extension action router to handle specific actions'
+			extensionActionRouter(destination);
+			return;
+		}
 
         const navigationSuccessful = navigate(destination, transcript);
         if (!navigationSuccessful) {
@@ -182,7 +191,7 @@ async function useGPT(transcript) {
         console.log("Calling API...");
 
         // Collect possible destinations to help GPT make better decisions
-        const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...collectUniqueDestinations()];
+        const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...POSSIBLE_EXTENSION_ACTIONS, ...collectUniqueDestinations()];
         console.log("Possible destinations:", possibleDestinations);
 
         const response = await fetch(
@@ -211,8 +220,7 @@ async function useGPT(transcript) {
             if (destination === "narrate") {
                 textToSpeech("Calling text to speech from use GPT.");
             } else {
-                // After getting the destination, trigger navigation
-                const wasASidebarAction = window.sidebarActionsRouter(destination);
+
                 if (wasASidebarAction) {
                     // Store the confirmation message in sessionStorage
                     sessionStorage.setItem('canvoxNavigation', JSON.stringify({
@@ -221,7 +229,9 @@ async function useGPT(transcript) {
                     }));
                     return;
                 }
-                
+				
+                // After getting the destination, trigger navigation
+                const wasASidebarAction = window.sidebarActionsRouter(destination);                
                 const wasAnExtensionAction = extensionActionRouter(destination);
                 if (!wasASidebarAction && !wasAnExtensionAction) {
                     navigate(destination, transcript);
@@ -231,6 +241,31 @@ async function useGPT(transcript) {
     } catch (error) {
         console.error("Error calling API:", error);
     }
+}
+
+function extensionActionRouter(destination) {
+	// This function routes to extension-specific actions
+	// based on the destination provided
+
+	switch (destination) {
+		case "micmute":
+			// Handle microphone mute action
+			window.toggleMicrophone(); // Call the function to toggle the microphone state
+			break;
+		case "volume up":
+		case "volume down":
+		case "volume mute":
+			// Handle volume adjustment actions
+			window.adjustVolume(destination);
+			break;
+		case "toggletranscript":
+			// Handle toggle transcript action
+			window.toggleTranscript(); // Call the function to toggle the transcript visibility
+			break;
+		default:
+			return false; // Not an extension action
+	}
+	return true; // Successfully handled an extension action
 }
 
 function navigate(destination) {
