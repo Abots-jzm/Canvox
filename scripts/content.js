@@ -200,7 +200,7 @@
 
 			chrome.storage.sync.set({volume: newVol});		
 			console.log(`Volume adjusted to: ${newVol}`); // Log the new volume for debugging
-		}), 100); // Change newVol and store after a short delay to ensure currVol is set correctly
+		}, 100); // Change newVol and store after a short delay to ensure currVol is set correctly
 	}
 
 	window.adjustVolume = adjustVolume;
