@@ -220,7 +220,8 @@ async function useGPT(transcript) {
             if (destination === "narrate") {
                 textToSpeech("Calling text to speech from use GPT.");
             } else {
-
+                // After getting the destination, trigger navigation
+                const wasASidebarAction = window.sidebarActionsRouter(destination);
                 if (wasASidebarAction) {
                     // Store the confirmation message in sessionStorage
                     sessionStorage.setItem('canvoxNavigation', JSON.stringify({
@@ -229,9 +230,7 @@ async function useGPT(transcript) {
                     }));
                     return;
                 }
-				
-                // After getting the destination, trigger navigation
-                const wasASidebarAction = window.sidebarActionsRouter(destination);                
+                
                 const wasAnExtensionAction = extensionActionRouter(destination);
                 if (!wasASidebarAction && !wasAnExtensionAction) {
                     navigate(destination, transcript);

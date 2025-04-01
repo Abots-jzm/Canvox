@@ -32,6 +32,12 @@
 	let recognition = null;
 	let isRecognizing = false;
 
+	// Run the navigation message check when the page loads
+	checkNavigationMessages();
+	
+	// Also check after any page state changes
+	window.addEventListener('popstate', checkNavigationMessages);
+
 	// Default settings (fallback in case defaults.js hasn't loaded)
 	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
 		hotkeyMicrophone: "x",
