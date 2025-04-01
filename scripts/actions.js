@@ -25,11 +25,28 @@ const POSSIBLE_EXTENSION_ACTIONS = [
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	const destination = extractDestination(transcript);
+
+	// Handles narration requests
+	if (destination === "narrate") {
+		textToSpeech("Calling text to speech from actions.");
+		return;
+	}
+
+	// Handles navigation requests
 	if (destination) {
 		// Check if the destination is a sidebar action
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
-		if (wasASidebarAction) return;
-
+		if (wasASidebarAction) {
+			// Store the confirmation message in sessionStorage
+			sessionStorage.setItem(
+				"canvoxNavigation",
+				JSON.stringify({
+					message: `Opened ${destination}`,
+					timestamp: Date.now(),
+				})
+			);
+			return;
+		}
 		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
 			// If the destination is related to microphone, volume, or transcript, trigger the action directly
 			// Call the extension action router to handle specific actions'
@@ -71,6 +88,8 @@ function extractDestination(transcript) {
 	// Pattern 6: Click/Press actions - "click X", "press X", etc.
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
+	// Pattern 7: Narration - "Read the main content", etc.
+	const narrateContent = /(read|speak|narrate)(\s+the)?(\s+(main|this|page))?(\s+content)?/i;
 
 	// Extension actions - "mute microphone", "volume up", etc.
 	// Pattern 7: microphone mute
@@ -85,6 +104,7 @@ function extractDestination(transcript) {
 	// Pattern 10: Toggle transcript
 	const toggleTranscript =
 		/(show|hide|toggle)\s+transcript/i;
+
 
 	let match;
 	let destination;
@@ -113,8 +133,9 @@ function extractDestination(transcript) {
 		destination = match[1];
 	} else if ((match = directCommands.exec(transcript))) {
 		destination = match[1];
+	} else if ((match = narrateContent.exec(transcript))) {
+		return "narrate";
 	}
-
 	// If there was a RegEx match,
 	// remove words like "please", "pls", "plz".
 	if (destination) {
@@ -204,7 +225,11 @@ async function useGPT(transcript) {
 		console.log("Calling API...");
 
 		// Collect possible destinations to help GPT make better decisions
-		const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...POSSIBLE_EXTENSION_ACTIONS, ...collectUniqueDestinations()];
+		const possibleDestinations = [
+			...POSSIBLE_SIDEBAR_DESTINATIONS,
+			...POSSIBLE_EXTENSION_ACTIONS,
+			...collectUniqueDestinations(),
+		];
 		console.log("Possible destinations:", possibleDestinations);
 
 		const response = await fetch(
@@ -228,11 +253,29 @@ async function useGPT(transcript) {
 				.replace(/^["']|["']$/g, "")
 				.toLowerCase();
 			console.log("Destination from GPT:", destination);
-			// After getting the destination, trigger navigation
-			const wasASidebarAction = window.sidebarActionsRouter(destination);
-			const wasAnExtensionAction = extensionActionRouter(destination);
-			if (!wasASidebarAction && !wasAnExtensionAction) {
-				navigate(destination, transcript);
+
+			// Check if destination is a narration request
+			if (destination === "narrate") {
+				textToSpeech("Calling text to speech from use GPT.");
+			} else {
+				// After getting the destination, trigger navigation
+				const wasASidebarAction = window.sidebarActionsRouter(destination);
+				if (wasASidebarAction) {
+					// Store the confirmation message in sessionStorage
+					sessionStorage.setItem(
+						"canvoxNavigation",
+						JSON.stringify({
+							message: `Opened ${destination}`,
+							timestamp: Date.now(),
+						})
+					);
+					return;
+				}
+
+				const wasAnExtensionAction = extensionActionRouter(destination);
+				if (!wasASidebarAction && !wasAnExtensionAction) {
+					navigate(destination, transcript);
+				}
 			}
 		}
 	} catch (error) {
@@ -285,6 +328,16 @@ function navigate(destination) {
 			link.textContent.toLowerCase().includes(destination) ||
 			(link.title && link.title.toLowerCase().includes(destination))
 		) {
+			// Store the confirmation message in sessionStorage for audio confirmation
+			sessionStorage.setItem(
+				"canvoxNavigation",
+				JSON.stringify({
+					message: `Opened ${destination}`,
+					timestamp: Date.now(),
+				})
+			);
+
+			// Then navigate
 			link.click();
 			return true;
 		}
@@ -294,6 +347,16 @@ function navigate(destination) {
 				child.textContent.toLowerCase().includes(destination) ||
 				(child.title && child.title.toLowerCase().includes(destination))
 			) {
+				// Store the confirmation message in sessionStorage for audio confirmation
+				sessionStorage.setItem(
+					"canvoxNavigation",
+					JSON.stringify({
+						message: `Opened ${destination}`,
+						timestamp: Date.now(),
+					})
+				);
+
+				// Then navigate
 				link.click();
 				return true;
 			}
@@ -302,4 +365,45 @@ function navigate(destination) {
 
 	// No matching link found
 	return false;
+}
+
+async function textToSpeech(narrateContent) {
+	try {
+		console.log("Calling API (TTS)...");
+
+		// Create an audio element to play the response
+		const audioElement = document.createElement("audio");
+		audioElement.controls = false;
+		audioElement.style.display = "none";
+		document.body.appendChild(audioElement);
+
+		const response = await fetch(
+			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
+			// Uncomment the line below, and comment the line above to test locally
+			// 'http://localhost:3000/api/tts',
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ narrate_Content: narrateContent }),
+			}
+		);
+
+		if (!response.ok) {
+			throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+		}
+
+		// Create a URL for the audio blob
+		const audioBlob = await response.blob();
+		const audioUrl = URL.createObjectURL(audioBlob);
+
+		// Set the source and play
+		audioElement.src = audioUrl;
+		await audioElement.play();
+
+		// Dispatch a custom event that content.js will listen for
+		const ttsEvent = new CustomEvent("tts-ready", { detail: { audioElement } });
+		document.dispatchEvent(ttsEvent);
+	} catch (error) {
+		console.error("Error in textToSpeech function:", error);
+	}
 }
