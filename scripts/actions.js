@@ -16,7 +16,6 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	//R
-
 	if (/^(open|click|start)\s+reply/i.test(transcript)) {
 		if (openDiscussionReply()) return true;
 	  }
@@ -26,6 +25,8 @@ function actions(transcript) {
 	if (/^(please\s+submit|submit\s+now|submit)/i.test(transcript)) {
 		if (submitDiscussionReply()) return true;
 	  }
+	//R
+
 	const destination = extractDestination(transcript);
 	if (destination) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
@@ -42,6 +43,7 @@ function actions(transcript) {
 	}
 }
 
+//R
 function submitDiscussionReply() {
 	try {
 	  // Find the reply button using the exact selector from your Canvas HTML
@@ -81,7 +83,7 @@ function openDiscussionReply() {
 	}
   }
 
-//R
+
 function handleDiscussionBoxCommand(transcript) {
 	// 1. Extract text from commands
 	const inputRegex = /(?:write|type|paste|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)?\s*(.+)/i;
@@ -121,6 +123,7 @@ function handleDiscussionBoxCommand(transcript) {
 	  return false;
 	}
   }
+  //R
  
 
 // This function uses RegEx to extract a destination from the user's voice input. It looks for various patterns that indicate what the user wants to do, such as "go to", "show me", "click", etc. If it finds a match, it cleans up the extracted text and returns it as the destination. If no match is found, it returns undefined.
