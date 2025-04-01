@@ -37,12 +37,15 @@ function actions(transcript) {
 //R
 function handleDiscussionBoxCommand(transcript) {
 	// 1. Extract text from commands
-	const inputRegex = /(?:type|paste|write|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)\s+(.+)/i;
+	const inputRegex = /(?:write|type|paste|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)?\s*(.+)/i;
 	const match = inputRegex.exec(transcript);
    
 	if (!match) return false; // Not a discussion box command
 	 const textToPaste = match[1].trim();
+
+	 
 	if (!textToPaste) return false;
+
 	 // 2. Find the Canvas editor iframe
 	const iframe = document.querySelector('iframe.tox-edit-area__iframe, #message-body-root_ifr');
 	if (!iframe) {
