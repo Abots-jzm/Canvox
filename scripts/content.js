@@ -152,7 +152,7 @@
 
 		// Get the current volume from storage
 		chrome.storage.sync.get("volume", (data) => {
-			currVol = data.volume // Retrieve current volume
+			currVol = parseInt(data.volume) // Retrieve current volume
 			if (currVol === undefined) {
 				// If volume is not set, default to 50
 				currVol = DEFAULT_SETTINGS.volume;
@@ -179,19 +179,15 @@
 	function setVolume(volume) {
 		// This function can be used to set the volume of the speech synthesis or any other audio output
 
+		// Ensure volume is between 0 and 100
+		volume = Math.min(100, volume); 
+		volume = Math.max(0, volume);
+
+		// Set the volume in the storage
 		chrome.storage.sync.set({ volume: volume });
 
 		setTimeout(function(){
-			let vol;
-			console.log(`Volume set to: ${volume}`); // Log the new volume for debugging
-			chrome.storage.sync.get("volume", (data) => {
-				vol = data.volume;
-			});
-			setTimeout(function(){
-				console.log(`new vol: ${vol}`);
-			}
-			, 100);
-
+			console.log(`Volume set to: ${volume}`); // Log the new volume
 		}, 100);
 
 	}
