@@ -23,6 +23,9 @@ function actions(transcript) {
 
 	if (handleDiscussionBoxCommand(transcript)) return; 
 	
+	if (/^(please\s+submit|submit\s+now|submit)/i.test(transcript)) {
+		if (submitDiscussionReply()) return true;
+	  }
 	const destination = extractDestination(transcript);
 	if (destination) {
 		const wasASidebarAction = window.sidebarActionsRouter(destination);
@@ -38,6 +41,26 @@ function actions(transcript) {
 		useGPT(transcript);
 	}
 }
+
+function submitDiscussionReply() {
+	try {
+	  // Find the reply button using the exact selector from your Canvas HTML
+	  const submitButton = document.querySelector('button[data-testid="DiscussionEdit-submit"]');
+
+	  
+	  if (submitButton) {
+		submitButton.click();
+		console.log("Successfully clicked the Reply button");
+		return true;
+	  } else {
+		console.warn("Reply button not found - are you on a discussion page?");
+		return false;
+	  }
+	} catch (error) {
+	  console.error("Failed to click Reply button:", error);
+	  return false;
+	}
+  }
 
 function openDiscussionReply() {
 	try {
