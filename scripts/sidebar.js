@@ -1,3 +1,5 @@
+// This is the script responsible for handling sidebar actions in the Canvox extension.
+// After we decide that the speech command is a sidebar action, we call this function to handle the navigation
 function sidebarActionsRouter(destination) {
 	let wasASidebarAction = true;
 

@@ -1,3 +1,6 @@
+// This script handles the actions for navigating the sidebar based on user voice input. Think of it as the "brain" of the extension. It will contain most of the logic for interpreting user commands and deciding what to do with them.
+
+// This list is neccessary to give GPT a better idea of what the user might be trying to say. It contains all the possible sidebar destinations that we can navigate to. This is used when we can't find a match using RegEx, and we need to call GPT to interpret the user's command.
 const POSSIBLE_SIDEBAR_DESTINATIONS = [
 	"home",
 	"dashboard",
@@ -10,54 +13,52 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 	"back",
 ];
 
-const POSSIBLE_EXTENSION_ACTIONS = [
-	"micmute",
-	"volume up",
-	"volume down",
-	"volume mute",
-	"toggletranscript",
-];
+const POSSIBLE_EXTENSION_ACTIONS = ["micmute", "volume up", "volume down", "volume mute", "toggletranscript"];
 
+// This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
-    const destination = extractDestination(transcript);
+	const destination = extractDestination(transcript);
 
-    // Handles narration requests
-    if (destination === "narrate") {
-        textToSpeech("Calling text to speech from actions.");
-        return;
-    }
+	// Handles narration requests
+	if (destination === "narrate") {
+		textToSpeech("Calling text to speech from actions.");
+		return;
+	}
 
-    // Handles navigation requests
-    if (destination) {
-        // Check if the destination is a sidebar action
-        const wasASidebarAction = window.sidebarActionsRouter(destination);
-        if (wasASidebarAction) {
-            // Store the confirmation message in sessionStorage
-            sessionStorage.setItem('canvoxNavigation', JSON.stringify({
-                message: `Opened ${destination}`,
-                timestamp: Date.now()
-            }));
-            return;
-        }
-
-        if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
+	// Handles navigation requests
+	if (destination) {
+		// Check if the destination is a sidebar action
+		const wasASidebarAction = window.sidebarActionsRouter(destination);
+		if (wasASidebarAction) {
+			// Store the confirmation message in sessionStorage
+			sessionStorage.setItem(
+				"canvoxNavigation",
+				JSON.stringify({
+					message: `Opened ${destination}`,
+					timestamp: Date.now(),
+				})
+			);
+			return;
+		}
+		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
 			// If the destination is related to microphone, volume, or transcript, trigger the action directly
 			// Call the extension action router to handle specific actions'
 			extensionActionRouter(destination);
 			return;
 		}
 
-        const navigationSuccessful = navigate(destination, transcript);
-        if (!navigationSuccessful) {
-            // Only call useGPT if navigation failed
-            useGPT(transcript);
-        }
-    } else {
-        // No destination was found, use GPT to interpret
-        useGPT(transcript);
-    }
+		const navigationSuccessful = navigate(destination, transcript);
+		if (!navigationSuccessful) {
+			// Only call useGPT if navigation failed
+			useGPT(transcript);
+		}
+	} else {
+		// No destination was found, use GPT to interpret
+		useGPT(transcript);
+	}
 }
 
+// This function uses RegEx to extract a destination from the user's voice input. It looks for various patterns that indicate what the user wants to do, such as "go to", "show me", "click", etc. If it finds a match, it cleans up the extracted text and returns it as the destination. If no match is found, it returns undefined.
 function extractDestination(transcript) {
 	// The following code makes tries to do as much as possible locally before falling back to the chatgpt server.
 	// RegEx = Regular Expression, test here https://regex101.com/
@@ -77,18 +78,47 @@ function extractDestination(transcript) {
 	// Pattern 5: Conversational - "I need to see my X", etc.
 	const conversationalPhrases =
 		/(?:I\s+(?:need|want)\s+to\s+(?:see|check)(?:\s+my)?|let\s+me\s+see(?:\s+what)?|show\s+me\s+what(?:\s+I'm)?)\s+([a-z0-9\s]+)/i;
-	// Pattern 7: Click/Press actions - "click X", "press X", etc.
+	// Pattern 6: Click/Press actions - "click X", "press X", etc.
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
 	// Pattern 8: Narration - "Read the main content", etc.
-	const narrateContent =
-		/(read|speak|narrate)(\s+the)?(\s+(main|this|page))?(\s+content)?/i;
+	const narrateContent = /(read|speak|narrate)(\s+the)?(\s+(main|this|page))?(\s+content)?/i;
+
+	// Extension actions - "mute microphone", "volume up", etc.
+	// Pattern 7: microphone mute
+	const microphoneMute = /(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
+	// Pattern 8: Volume mute, up, down
+	const volumeChange = /(turn|change)?\s*volume\s+(up|down|mute)/i;
+	// Pattern 9: Toggle transcript
+	const toggleTranscript = /(show|hide|toggle)\s+transcript/i;
+
+	// Extension actions - "mute microphone", "volume up", etc.
+	// Pattern 7: microphone mute
+	const microphoneMute = /(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
+	// Pattern 8: Volume mute, up, down
+	const volumeChange = /(turn|change)?\s*volume\s+(up|down|mute)/i;
+	// Pattern 9: Toggle transcript
+	const toggleTranscript = /(show|hide|toggle)\s+transcript/i;
 
 	let match;
 	let destination;
 
+	// Assign extension-related actions
+	if ((match = microphoneMute.exec(transcript))) {
+		destination = "micmute";
+	} else if ((match = volumeChange.exec(transcript))) {
+		destination =
+			match[match.length - 1] === "mute"
+				? "volume mute"
+				: match[match.length - 1] === "up"
+				? "volume up"
+				: "volume down";
+	} else if ((match = toggleTranscript.exec(transcript))) {
+		destination = "toggletranscript";
+	}
+
 	// Assigns an action to an according
-	if ((match = contextNavigation.exec(transcript))) {
+	else if ((match = contextNavigation.exec(transcript))) {
 		destination = match[1];
 	} else if ((match = clickPressActions.exec(transcript))) {
 		destination = match[1];
@@ -114,7 +144,7 @@ function extractDestination(transcript) {
 	return destination;
 }
 
-// Collects all unique link texts from the page, removing duplicates and substrings
+// This function collects all unique link texts from the page, removing duplicates and substrings. It basically extracts all the possible navigation destinations for chatGPT to consider when interpreting the user's command. It excludes links from the right-side-wrapper to avoid cluttering the results with irrelevant links.
 function collectUniqueDestinations() {
 	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
 	if (!layoutWrapper) return [];
@@ -184,62 +214,70 @@ function collectUniqueDestinations() {
 	return filteredTexts;
 }
 
+// This is the function that handles calling the GPT API to interpret the user's command when RegEx fails to find a match. It sends the user's voice input and the possible destinations to the API, and then processes the response to navigate to the appropriate destination. If the API call fails, it logs the error to the console.
 async function useGPT(transcript) {
-    // If the RegEx fails to match,
-    // we can fallback to a GPT check
-    try {
-        console.log("Calling API...");
+	// If the RegEx fails to match,
+	// we can fallback to a GPT check
+	try {
+		console.log("Calling API...");
 
-        // Collect possible destinations to help GPT make better decisions
-        const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...POSSIBLE_EXTENSION_ACTIONS, ...collectUniqueDestinations()];
-        console.log("Possible destinations:", possibleDestinations);
+		// Collect possible destinations to help GPT make better decisions
+		const possibleDestinations = [
+			...POSSIBLE_SIDEBAR_DESTINATIONS,
+			...POSSIBLE_EXTENSION_ACTIONS,
+			...collectUniqueDestinations(),
+		];
+		console.log("Possible destinations:", possibleDestinations);
 
-        const response = await fetch(
-            "https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
-            // Uncomment the line below, and comment the line above to test locally
-            // 'http://localhost:3000/api/gpt',
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    voice_input: transcript,
-                    possible_destinations: possibleDestinations,
-                }),
-            }
-        );
-        const data = await response.json();
-        if (data && data.response) {
-            //trim and remove quotes at the start and end if there is any
-            const destination = data.response
-                .trim()
-                .replace(/^["']|["']$/g, "")
-                .toLowerCase();
-            console.log("Destination from GPT:", destination);
+		const response = await fetch(
+			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
+			// Uncomment the line below, and comment the line above to test locally
+			// 'http://localhost:3000/api/gpt',
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					voice_input: transcript,
+					possible_destinations: possibleDestinations,
+				}),
+			}
+		);
+		const data = await response.json();
+		if (data && data.response) {
+			//trim and remove quotes at the start and end if there is any
+			const destination = data.response
+				.trim()
+				.replace(/^["']|["']$/g, "")
+				.toLowerCase();
+			console.log("Destination from GPT:", destination);
 
-            // Check if destination is a narration request
-            if (destination === "narrate") {
-                textToSpeech("Calling text to speech from use GPT.");
-            } else {
-                // After getting the destination, trigger navigation
-                const wasASidebarAction = window.sidebarActionsRouter(destination);
-                if (wasASidebarAction) {
-                    // Store the confirmation message in sessionStorage
-                    sessionStorage.setItem('canvoxNavigation', JSON.stringify({
-                        message: `Opened ${destination}`,
-                        timestamp: Date.now()
-                    }));
-                    return;
-                }
-                
-                const wasAnExtensionAction = extensionActionRouter(destination);
-                if (!wasASidebarAction && !wasAnExtensionAction) {
-                    navigate(destination, transcript);
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error calling API:", error);
-    }
+			// Check if destination is a narration request
+			if (destination === "narrate") {
+				textToSpeech("Calling text to speech from use GPT.");
+			} else {
+				// After getting the destination, trigger navigation
+				const wasASidebarAction = window.sidebarActionsRouter(destination);
+				if (wasASidebarAction) {
+					// Store the confirmation message in sessionStorage
+					sessionStorage.setItem(
+						"canvoxNavigation",
+						JSON.stringify({
+							message: `Opened ${destination}`,
+							timestamp: Date.now(),
+						})
+					);
+					return;
+				}
+
+				const wasAnExtensionAction = extensionActionRouter(destination);
+				if (!wasASidebarAction && !wasAnExtensionAction) {
+					navigate(destination, transcript);
+				}
+			}
+		}
+	} catch (error) {
+		console.error("Error calling API:", error);
+	}
 }
 
 function extensionActionRouter(destination) {
@@ -268,47 +306,53 @@ function extensionActionRouter(destination) {
 }
 
 function navigate(destination) {
-    //select all links in the layout wrapper
-    const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
-    const links = layoutWrapper ? layoutWrapper.querySelectorAll("a") : [];
+	//select all links in the layout wrapper
+	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
+	const links = layoutWrapper ? layoutWrapper.querySelectorAll("a") : [];
 
-    //search for the appropriate link and navigate
-    for (const link of links) {
-        if (
-            link.textContent.toLowerCase().includes(destination) ||
-            (link.title && link.title.toLowerCase().includes(destination))
-        ) {
-            // Store the confirmation message in sessionStorage for audio confirmation
-            sessionStorage.setItem('canvoxNavigation', JSON.stringify({
-                message: `Opened ${destination}`,
-                timestamp: Date.now()
-            }));
-            
-            // Then navigate
-            link.click();
-            return true;
-        }
+	//search for the appropriate link and navigate
+	for (const link of links) {
+		if (
+			link.textContent.toLowerCase().includes(destination) ||
+			(link.title && link.title.toLowerCase().includes(destination))
+		) {
+			// Store the confirmation message in sessionStorage for audio confirmation
+			sessionStorage.setItem(
+				"canvoxNavigation",
+				JSON.stringify({
+					message: `Opened ${destination}`,
+					timestamp: Date.now(),
+				})
+			);
 
-        for (const child of link.children) {
-            if (
-                child.textContent.toLowerCase().includes(destination) ||
-                (child.title && child.title.toLowerCase().includes(destination))
-            ) {
-                // Store the confirmation message in sessionStorage for audio confirmation
-                sessionStorage.setItem('canvoxNavigation', JSON.stringify({
-                    message: `Opened ${destination}`,
-                    timestamp: Date.now()
-                }));
-                
-                // Then navigate
-                link.click();
-                return true;
-            }
-        }
-    }
+			// Then navigate
+			link.click();
+			return true;
+		}
 
-    // No matching link found
-    return false;
+		for (const child of link.children) {
+			if (
+				child.textContent.toLowerCase().includes(destination) ||
+				(child.title && child.title.toLowerCase().includes(destination))
+			) {
+				// Store the confirmation message in sessionStorage for audio confirmation
+				sessionStorage.setItem(
+					"canvoxNavigation",
+					JSON.stringify({
+						message: `Opened ${destination}`,
+						timestamp: Date.now(),
+					})
+				);
+
+				// Then navigate
+				link.click();
+				return true;
+			}
+		}
+	}
+
+	// No matching link found
+	return false;
 }
 
 async function textToSpeech(narrateContent) {
@@ -320,7 +364,7 @@ async function textToSpeech(narrateContent) {
 		audioElement.controls = false;
 		audioElement.style.display = "none";
 		document.body.appendChild(audioElement);
-		
+
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
 			// Uncomment the line below, and comment the line above to test locally
@@ -335,19 +379,18 @@ async function textToSpeech(narrateContent) {
 		if (!response.ok) {
 			throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
 		}
-		
+
 		// Create a URL for the audio blob
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
-		
+
 		// Set the source and play
 		audioElement.src = audioUrl;
 		await audioElement.play();
-		
+
 		// Dispatch a custom event that content.js will listen for
-		const ttsEvent = new CustomEvent('tts-ready', { detail: { audioElement } });
+		const ttsEvent = new CustomEvent("tts-ready", { detail: { audioElement } });
 		document.dispatchEvent(ttsEvent);
-		
 	} catch (error) {
 		console.error("Error in textToSpeech function:", error);
 	}
