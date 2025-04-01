@@ -181,7 +181,7 @@
 
 		// Get the current volume from storage
 		chrome.storage.sync.get("volume", (data) => {
-			currVol = data.volume; // Retrieve current volume
+			currVol = parseInt(data.volume) // Retrieve current volume
 			if (currVol === undefined) {
 				// If volume is not set, default to 50
 				currVol = DEFAULT_SETTINGS.volume;
@@ -198,12 +198,30 @@
 				newVol = Math.max(0, currVol - 10); // Decrease volume by 10, min 0
 			}
 
-			chrome.storage.sync.set({ volume: newVol });
-			console.log(`New volume set to: ${newVol}`); // Log the new volume for debugging
-		}, 100); // Change newVol and store after a short delay to ensure currVol is set correctly
+			chrome.storage.sync.set({volume: newVol});		
+			console.log(`Volume adjusted to: ${newVol}`); // Log the new volume for debugging
+		}), 100); // Change newVol and store after a short delay to ensure currVol is set correctly
 	}
 
 	window.adjustVolume = adjustVolume;
+
+	function setVolume(volume) {
+		// This function can be used to set the volume of the speech synthesis or any other audio output
+
+		// Ensure volume is between 0 and 100
+		volume = Math.min(100, volume); 
+		volume = Math.max(0, volume);
+
+		// Set the volume in the storage
+		chrome.storage.sync.set({ volume: volume });
+
+		setTimeout(function(){
+			console.log(`Volume set to: ${volume}`); // Log the new volume
+		}, 100);
+
+	}
+
+	window.setVolume = setVolume;
 
 	/**
 	 * Determines if a keyboard event matches the configured hotkey
