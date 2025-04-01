@@ -1,3 +1,4 @@
+// This is the script responsible for inserting the transcript elements into the page.
 function injectElements() {
 	const speechContainer = document.createElement("div");
 	Object.assign(speechContainer.style, {
