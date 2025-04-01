@@ -16,6 +16,11 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	//R
+
+	if (/^(open|click|start)\s+reply/i.test(transcript)) {
+		if (openDiscussionReply()) return true;
+	  }
+
 	if (handleDiscussionBoxCommand(transcript)) return; 
 	
 	const destination = extractDestination(transcript);
@@ -34,6 +39,25 @@ function actions(transcript) {
 	}
 }
 
+function openDiscussionReply() {
+	try {
+	  // Find the reply button using the exact selector from your Canvas HTML
+	  const replyButton = document.querySelector('button[data-testid="discussion-topic-reply"]');
+	  
+	  if (replyButton) {
+		replyButton.click();
+		console.log("Successfully clicked the Reply button");
+		return true;
+	  } else {
+		console.warn("Reply button not found - are you on a discussion page?");
+		return false;
+	  }
+	} catch (error) {
+	  console.error("Failed to click Reply button:", error);
+	  return false;
+	}
+  }
+
 //R
 function handleDiscussionBoxCommand(transcript) {
 	// 1. Extract text from commands
@@ -43,7 +67,7 @@ function handleDiscussionBoxCommand(transcript) {
 	if (!match) return false; // Not a discussion box command
 	 const textToPaste = match[1].trim();
 
-	 
+
 	if (!textToPaste) return false;
 
 	 // 2. Find the Canvas editor iframe
