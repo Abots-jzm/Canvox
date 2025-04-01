@@ -21,6 +21,7 @@ function actions(transcript) {
 
     // Handles navigation requests
     if (destination) {
+        // Check if the destination is a sidebar action
         const wasASidebarAction = window.sidebarActionsRouter(destination);
         if (wasASidebarAction) {
             // Store the confirmation message in sessionStorage
@@ -30,6 +31,13 @@ function actions(transcript) {
             }));
             return;
         }
+
+        // Check if the destination is related to extension controls
+        const wasAnExtensionAction = extensionActionRouter(destination);
+        if (wasAnExtensionAction) {
+            return;
+        }
+
         const navigationSuccessful = navigate(destination, transcript);
         if (!navigationSuccessful) {
             // Only call useGPT if navigation failed
@@ -168,51 +176,61 @@ function collectUniqueDestinations() {
 }
 
 async function useGPT(transcript) {
-	// If the RegEx fails to match,
-	// we can fallback to a GPT check
-	try {
-		console.log("Calling API...");
+    // If the RegEx fails to match,
+    // we can fallback to a GPT check
+    try {
+        console.log("Calling API...");
 
-		// Collect possible destinations to help GPT make better decisions
-		const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...collectUniqueDestinations()];
-		console.log("Possible destinations:", possibleDestinations);
+        // Collect possible destinations to help GPT make better decisions
+        const possibleDestinations = [...POSSIBLE_SIDEBAR_DESTINATIONS, ...collectUniqueDestinations()];
+        console.log("Possible destinations:", possibleDestinations);
 
-		const response = await fetch(
-			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
-			// Uncomment the line below, and comment the line above to test locally
-			// 'http://localhost:3000/api/gpt',
-			{
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					voice_input: transcript,
-					possible_destinations: possibleDestinations,
-				}),
-			}
-		);
-		const data = await response.json();
-		if (data && data.response) {
-			//trim and remove quotes at the start and end if there is any
-			const destination = data.response
-				.trim()
-				.replace(/^["']|["']$/g, "")
-				.toLowerCase();
-			console.log("Destination from GPT:", destination);
+        const response = await fetch(
+            "https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/gpt",
+            // Uncomment the line below, and comment the line above to test locally
+            // 'http://localhost:3000/api/gpt',
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    voice_input: transcript,
+                    possible_destinations: possibleDestinations,
+                }),
+            }
+        );
+        const data = await response.json();
+        if (data && data.response) {
+            //trim and remove quotes at the start and end if there is any
+            const destination = data.response
+                .trim()
+                .replace(/^["']|["']$/g, "")
+                .toLowerCase();
+            console.log("Destination from GPT:", destination);
 
-			// Check if destination is a narration request
-			if (destination === "narrate") {
-				textToSpeech("Calling text to speech from use GPT.");
-			} else {
-				// After getting the destination, trigger navigation
-				const wasASidebarAction = window.sidebarActionsRouter(destination);
-				if (!wasASidebarAction) {
-					navigate(destination, transcript);
-				}
-			}
-		}
-	} catch (error) {
-		console.error("Error calling API:", error);
-	}
+            // Check if destination is a narration request
+            if (destination === "narrate") {
+                textToSpeech("Calling text to speech from use GPT.");
+            } else {
+                // After getting the destination, trigger navigation
+                const wasASidebarAction = window.sidebarActionsRouter(destination);
+                if (wasASidebarAction) {
+                    // Store the confirmation message in sessionStorage
+                    sessionStorage.setItem('canvoxNavigation', JSON.stringify({
+                        message: `Opened ${destination}`,
+                        timestamp: Date.now()
+                    }));
+                    return;
+                }
+                
+                const wasAnExtensionAction = extensionActionRouter(destination);
+                if (!wasASidebarAction && !wasAnExtensionAction) {
+                    navigate(destination, transcript);
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error calling API:", error);
+    }
 }
 
 function navigate(destination) {

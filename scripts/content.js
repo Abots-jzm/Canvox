@@ -23,10 +23,9 @@
 			console.error("Error processing navigation message:", error);
 		}
 	}
-	
-	// Call this when the content script initializes
-	checkNavigationMessages();
 
+	// Check if the browser supports the SpeechRecognition API
+	// If not, exit early to avoid errors
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	if (!SpeechRecognition) return;
 
