@@ -81,23 +81,15 @@ function extractDestination(transcript) {
 	// Pattern 6: Click/Press actions - "click X", "press X", etc.
 	const clickPressActions =
 		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
-	// Pattern 8: Narration - "Read the main content", etc.
+	// Pattern 7: Narration - "Read the main content", etc.
 	const narrateContent = /(read|speak|narrate)(\s+the)?(\s+(main|this|page))?(\s+content)?/i;
 
-	// Extension actions - "mute microphone", "volume up", etc.
-	// Pattern 7: microphone mute
+	// Extension actions patterns
+	// Pattern 8: microphone mute
 	const microphoneMute = /(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
-	// Pattern 8: Volume mute, up, down
+	// Pattern 9: Volume mute, up, down
 	const volumeChange = /(turn|change)?\s*volume\s+(up|down|mute)/i;
-	// Pattern 9: Toggle transcript
-	const toggleTranscript = /(show|hide|toggle)\s+transcript/i;
-
-	// Extension actions - "mute microphone", "volume up", etc.
-	// Pattern 7: microphone mute
-	const microphoneMute = /(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
-	// Pattern 8: Volume mute, up, down
-	const volumeChange = /(turn|change)?\s*volume\s+(up|down|mute)/i;
-	// Pattern 9: Toggle transcript
+	// Pattern 10: Toggle transcript
 	const toggleTranscript = /(show|hide|toggle)\s+transcript/i;
 
 	let match;
