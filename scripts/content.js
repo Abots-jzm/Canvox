@@ -170,11 +170,33 @@
 			}
 
 			chrome.storage.sync.set({volume: newVol});		
-			console.log(`New volume set to: ${newVol}`); // Log the new volume for debugging
+			console.log(`Volume adjusted to: ${newVol}`); // Log the new volume for debugging
 		}), 100); // Change newVol and store after a short delay to ensure currVol is set correctly
 	}
 
 	window.adjustVolume = adjustVolume;
+
+	function setVolume(volume) {
+		// This function can be used to set the volume of the speech synthesis or any other audio output
+
+		chrome.storage.sync.set({ volume: volume });
+
+		setTimeout(function(){
+			let vol;
+			console.log(`Volume set to: ${volume}`); // Log the new volume for debugging
+			chrome.storage.sync.get("volume", (data) => {
+				vol = data.volume;
+			});
+			setTimeout(function(){
+				console.log(`new vol: ${vol}`);
+			}
+			, 100);
+
+		}, 100);
+
+	}
+
+	window.setVolume = setVolume;
 
 	/**
 	 * Determines if a keyboard event matches the configured hotkey
