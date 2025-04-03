@@ -18,7 +18,7 @@
 				"scripts/defaults.js",
 				"scripts/injectElements.js",
 				"scripts/content.js",
-				"scripts/sidebar.js",
+				"scripts/routers.js",
 				"scripts/actions.js"
 			],
 			"matches": ["https://*.instructure.com/*"]

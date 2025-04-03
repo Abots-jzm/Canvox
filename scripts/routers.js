@@ -1,5 +1,7 @@
-// This is the script responsible for handling sidebar actions in the Canvox extension.
-// After we decide that the speech command is a sidebar action, we call this function to handle the navigation
+// this script contains functions that will parse the user's voice input and route it to the appropriate action
+// it also contains functions that will gather information from the page to help the user navigate
+
+// This function routes the user's voice input to sidebar actions
 function sidebarActionsRouter(destination) {
 	let wasASidebarAction = true;
 
@@ -33,6 +35,44 @@ function sidebarActionsRouter(destination) {
 
 window.sidebarActionsRouter = sidebarActionsRouter;
 
+// This function routes the user's voice input to extension-specific actions
+function extensionActionRouter(destination) {
+	// This function routes to extension-specific actions
+	// based on the destination provided
+
+	// First check if destination is a volume set command
+	// since the case block would need 100 cases for each possible regex here
+	if (destination.match(/volume\s[0-9]+/)){
+		destination = destination.replace(/volume\s/, "")
+		window.setVolume(destination);
+		return true;
+	}
+
+	// Handle other extension actions
+	switch (destination) {
+		case "micmute":
+			// Handle microphone mute action
+			window.toggleMicrophone(); // Call the function to toggle the microphone state
+			break;
+		case "volume up":
+		case "volume down":
+		case "volume mute":
+			// Handle volume adjustment actions
+			window.adjustVolume(destination);
+			break;
+		case "toggletranscript":
+			// Handle toggle transcript action
+			window.toggleTranscript(); // Call the function to toggle the transcript visibility
+			break;
+		default:
+			return false; // No matching action found
+	}
+	return true; // Successfully handled an extension action
+}
+
+window.extensionActionRouter = extensionActionRouter;
+
+// This function routes the user's voice input to discussion box actions
 function wasATextAction(transcript) {
 	//R
 	if (/^(open|click|start)\s+reply/i.test(transcript)) {
@@ -232,39 +272,3 @@ function collectUniqueDestinations() {
 }
 
 window.collectUniqueDestinations = collectUniqueDestinations;
-
-function extensionActionRouter(destination) {
-	// This function routes to extension-specific actions
-	// based on the destination provided
-
-	// First check if destination is a volume set command
-	// since the case block would need 100 cases for each possible regex here
-	if (destination.match(/volume\s[0-9]+/)){
-		destination = destination.replace(/volume\s/, "")
-		window.setVolume(destination);
-		return true;
-	}
-
-	// Handle other extension actions
-	switch (destination) {
-		case "micmute":
-			// Handle microphone mute action
-			window.toggleMicrophone(); // Call the function to toggle the microphone state
-			break;
-		case "volume up":
-		case "volume down":
-		case "volume mute":
-			// Handle volume adjustment actions
-			window.adjustVolume(destination);
-			break;
-		case "toggletranscript":
-			// Handle toggle transcript action
-			window.toggleTranscript(); // Call the function to toggle the transcript visibility
-			break;
-		default:
-			return false; // No matching action found
-	}
-	return true; // Successfully handled an extension action
-}
-
-window.extensionActionRouter = extensionActionRouter;
