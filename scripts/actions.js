@@ -24,7 +24,9 @@ const POSSIBLE_EXTENSION_ACTIONS = [
 
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
-	const destination = extractDestination(transcript);
+	if (window.wasATextAction(transcript)) return;
+
+	const destination = window.extractDestination(transcript);
 
 	// Handles narration requests
 	if (destination === "narrate") {
@@ -50,7 +52,7 @@ function actions(transcript) {
 		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
 			// If the destination is related to microphone, volume, or transcript, trigger the action directly
 			// Call the extension action router to handle specific actions'
-			extensionActionRouter(destination);
+			window.extensionActionRouter(destination);
 			return;
 		}
 
@@ -65,157 +67,75 @@ function actions(transcript) {
 	}
 }
 
-// This function uses RegEx to extract a destination from the user's voice input. It looks for various patterns that indicate what the user wants to do, such as "go to", "show me", "click", etc. If it finds a match, it cleans up the extracted text and returns it as the destination. If no match is found, it returns undefined.
-function extractDestination(transcript) {
-	// The following code makes tries to do as much as possible locally before falling back to the chatgpt server.
-	// RegEx = Regular Expression, test here https://regex101.com/
+//R
+function submitDiscussionReply() {
+	// Find the reply button using the exact selector from your Canvas HTML
+	const submitButton = document.querySelector('button[data-testid="DiscussionEdit-submit"]');
 
-	// The section recognizes words or phrases and assigns to a command/variable
-	// Pattern 1: Direct commands - "go to X", "open X", etc.
-	const directCommands =
-		/(?:go(?:\s+to)?|open|show(?:\s+me)?|navigate\s+to|take\s+me\s+to|view|access|display)(?:\s+my)?\s+([a-z0-9\s]+?)(?:\s+course(?:s)?)?$/i;
-	// Pattern 2: Question forms - "where are my X?", etc.
-	const questionForms =
-		/(?:where\s+(?:are|is)(?:\s+my)?|can\s+I\s+see(?:\s+my)?|how\s+do\s+I\s+get\s+to(?:\s+my)?)\s+([a-z0-9\s]+)/i;
-	// Pattern 3: Specific needs - "show all my X", etc.
-	const specificNeeds =
-		/(?:show\s+(?:all|my)(?:\s+my)?|list\s+my(?:\s+current)?|display\s+my(?:\s+enrolled)?|find\s+my)\s+([a-z0-9\s]+)/i;
-	// Pattern 4: Context navigation - "return to X" etc.
-	const contextNavigation = /(?:return\s+to|back\s+to|switch\s+to|change\s+to|go\s+back(?:\s+to)?)\s+([a-z0-9\s]+|$)/i;
-	// Pattern 5: Conversational - "I need to see my X", etc.
-	const conversationalPhrases =
-		/(?:I\s+(?:need|want)\s+to\s+(?:see|check)(?:\s+my)?|let\s+me\s+see(?:\s+what)?|show\s+me\s+what(?:\s+I'm)?)\s+([a-z0-9\s]+)/i;
-	// Pattern 6: Click/Press actions - "click X", "press X", etc.
-	const clickPressActions =
-		/(?:click|press|select|choose|tap(?:\s+on)?|hit)\s+(?:the\s+)?([a-z0-9\s]+)(?:\s+button|link)?/i;
-	// Pattern 7: Narration - "Read the main content", etc.
-	const narrateContent = /(read|speak|narrate)(\s+the)?(\s+(main|this|page))?(\s+content)?/i;
-
-	// Extension actions - "mute microphone", "volume up", etc.
-	// Pattern 7: microphone mute
-	const microphoneMute =
-		/(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
-	// Pattern 8: Volume mute, up, down
-	const volumeShift =
-		/(turn|change)?\s*volume\s+(up|down|mute)/i;
-	// Pattern 9: Set volume to specific number
-	const setVolume =
-		/(set|change)?\s*volume\s*(to|set)?\s*(\d+)/i;
-	// Pattern 10: Toggle transcript
-	const toggleTranscript =
-		/(show|hide|toggle)\s+transcript/i;
-
-
-	let match;
-	let destination;
-
-	// Assign extension-related actions
-	if ((match = microphoneMute.exec(transcript))) {
-		destination = "micmute";
-	} else if ((match = volumeShift.exec(transcript))) {
-		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
-	} else if ((match = setVolume.exec(transcript))) {
-		destination = `volume ${match[match.length - 1]}`;
-	} else if ((match = toggleTranscript.exec(transcript))) {
-		destination = "toggletranscript";
+	if (submitButton) {
+		submitButton.click();
+		console.log("Successfully clicked the Reply button");
+		return true;
+	} else {
+		console.warn("Reply button not found - are you on a discussion page?");
+		return false;
 	}
-
-	// Assigns an action to an according
-	else if ((match = contextNavigation.exec(transcript))) {
-		destination = match[1];
-	} else if ((match = clickPressActions.exec(transcript))) {
-		destination = match[1];
-	} else if ((match = specificNeeds.exec(transcript))) {
-		destination = match[1];
-	} else if ((match = conversationalPhrases.exec(transcript))) {
-		destination = match[1];
-	} else if ((match = questionForms.exec(transcript))) {
-		destination = match[1];
-	} else if ((match = directCommands.exec(transcript))) {
-		destination = match[1];
-	} else if ((match = narrateContent.exec(transcript))) {
-		return "narrate";
-	}
-	// If there was a RegEx match,
-	// remove words like "please", "pls", "plz".
-	if (destination) {
-		destination = destination
-			.replace(/please|pls|plz/gi, "")
-			.trim()
-			.toLowerCase();
-	}
-	return destination;
 }
 
-// This function collects all unique link texts from the page, removing duplicates and substrings. It basically extracts all the possible navigation destinations for chatGPT to consider when interpreting the user's command. It excludes links from the right-side-wrapper to avoid cluttering the results with irrelevant links.
-function collectUniqueDestinations() {
-	const layoutWrapper = document.querySelector(".ic-Layout-wrapper");
-	if (!layoutWrapper) return [];
+function openDiscussionReply() {
+	// Find the reply button using the exact selector from your Canvas HTML
+	const replyButton = document.querySelector('button[data-testid="discussion-topic-reply"]');
 
-	// Exclude the right-side-wrapper and its children
-	const rightSideWrapper = layoutWrapper.querySelector("#right-side-wrapper");
-
-	// Get all links except those in the right-side-wrapper
-	const links = [];
-	const allLinks = layoutWrapper.querySelectorAll("a");
-
-	for (const link of allLinks) {
-		// Check if the link is a descendant of right-side-wrapper
-		if (rightSideWrapper && rightSideWrapper.contains(link)) {
-			continue; // Skip links inside right-side-wrapper
-		}
-		links.push(link);
+	if (replyButton) {
+		replyButton.click();
+		console.log("Successfully clicked the Reply button");
+		return true;
+	} else {
+		console.warn("Reply button not found - are you on a discussion page?");
+		return false;
 	}
-
-	// Collect all possible link texts
-	const allTexts = [];
-	for (const link of links) {
-		if (link.textContent.trim()) {
-			allTexts.push(link.textContent.trim().toLowerCase());
-		}
-		if (link.title && link.title.trim()) {
-			allTexts.push(link.title.trim().toLowerCase());
-		}
-
-		// Check children elements of the link
-		for (const child of link.children) {
-			if (child.textContent.trim()) {
-				allTexts.push(child.textContent.trim().toLowerCase());
-			}
-			if (child.title && child.title.trim()) {
-				allTexts.push(child.title.trim().toLowerCase());
-			}
-		}
-	}
-
-	// Remove duplicates first by using Set
-	const uniqueTexts = [...new Set(allTexts)];
-
-	// Remove substrings (if text is contained within another)
-	const filteredTexts = [];
-
-	for (let i = 0; i < uniqueTexts.length; i++) {
-		let isSubstring = false;
-		for (let j = 0; j < uniqueTexts.length; j++) {
-			// Skip self-comparison
-			if (i === j) continue;
-
-			// Check if uniqueTexts[i] is a substring of uniqueTexts[j]
-			if (uniqueTexts[j].includes(uniqueTexts[i]) && uniqueTexts[i].length < uniqueTexts[j].length) {
-				isSubstring = true;
-				break;
-			}
-		}
-
-		// Only add if not a substring of another element
-		if (!isSubstring && uniqueTexts[i].length > 2) {
-			// Ignore very short strings (likely not useful)
-			filteredTexts.push(uniqueTexts[i]);
-		}
-	}
-
-	return filteredTexts;
 }
+
+function handleDiscussionBoxCommand(transcript) {
+	// 1. Extract text from commands
+	const inputRegex =
+		/(?:write|type|paste|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)?\s*(.+)/i;
+	const match = inputRegex.exec(transcript);
+
+	if (!match) return false; // Not a discussion box command
+	const textToPaste = match[1].trim();
+
+	if (!textToPaste) return false;
+
+	// 2. Find the Canvas editor iframe
+	const iframe = document.querySelector("iframe.tox-edit-area__iframe, #message-body-root_ifr");
+	if (!iframe) {
+		console.warn("Canvas editor not found - are you on a discussion page?");
+		return false;
+	}
+	try {
+		// 3. Focus the editor
+		iframe.focus();
+		const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+		// 4. Find or create the paragraph element
+		let paragraph = iframeDoc.querySelector("p");
+
+		// 5. Insert text and trigger all necessary events
+		paragraph.textContent = textToPaste;
+
+		// These events make Canvas detect the changes
+		["input", "change", "keydown", "keyup", "blur"].forEach((eventType) => {
+			paragraph.dispatchEvent(new Event(eventType, { bubbles: true }));
+		});
+		console.log("Success! Pasted:", textToPaste);
+		return true;
+	} catch (error) {
+		console.error("Failed to paste text:", error);
+		return false;
+	}
+}
+//R
 
 // This is the function that handles calling the GPT API to interpret the user's command when RegEx fails to find a match. It sends the user's voice input and the possible destinations to the API, and then processes the response to navigate to the appropriate destination. If the API call fails, it logs the error to the console.
 async function useGPT(transcript) {
@@ -228,7 +148,7 @@ async function useGPT(transcript) {
 		const possibleDestinations = [
 			...POSSIBLE_SIDEBAR_DESTINATIONS,
 			...POSSIBLE_EXTENSION_ACTIONS,
-			...collectUniqueDestinations(),
+			...window.collectUniqueDestinations(),
 		];
 		console.log("Possible destinations:", possibleDestinations);
 
@@ -272,7 +192,7 @@ async function useGPT(transcript) {
 					return;
 				}
 
-				const wasAnExtensionAction = extensionActionRouter(destination);
+				const wasAnExtensionAction = window.extensionActionRouter(destination);
 				if (!wasASidebarAction && !wasAnExtensionAction) {
 					navigate(destination, transcript);
 				}
@@ -281,40 +201,6 @@ async function useGPT(transcript) {
 	} catch (error) {
 		console.error("Error calling API:", error);
 	}
-}
-
-function extensionActionRouter(destination) {
-	// This function routes to extension-specific actions
-	// based on the destination provided
-
-	// First check if destination is a volume set command
-	// since the case block would need 100 cases for each possible regex here
-	if (destination.match(/volume\s[0-9]+/)){
-		destination = destination.replace(/volume\s/, "")
-		window.setVolume(destination);
-		return true;
-	}
-
-	// Handle other extension actions
-	switch (destination) {
-		case "micmute":
-			// Handle microphone mute action
-			window.toggleMicrophone(); // Call the function to toggle the microphone state
-			break;
-		case "volume up":
-		case "volume down":
-		case "volume mute":
-			// Handle volume adjustment actions
-			window.adjustVolume(destination);
-			break;
-		case "toggletranscript":
-			// Handle toggle transcript action
-			window.toggleTranscript(); // Call the function to toggle the transcript visibility
-			break;
-		default:
-			return false; // No matching action found
-	}
-	return true; // Successfully handled an extension action
 }
 
 function navigate(destination) {
