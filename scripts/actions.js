@@ -15,17 +15,7 @@ const POSSIBLE_SIDEBAR_DESTINATIONS = [
 
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
-	//R
-	if (/^(open|click|start)\s+reply/i.test(transcript)) {
-		if (openDiscussionReply()) return true;
-	  }
-
-	if (handleDiscussionBoxCommand(transcript)) return; 
-	
-	if (/^(please\s+submit|submit\s+now|submit)/i.test(transcript)) {
-		if (submitDiscussionReply()) return true;
-	  }
-	//R
+	if (wasATextAction(transcript)) return;
 
 	const destination = extractDestination(transcript);
 	if (destination) {
@@ -43,88 +33,117 @@ function actions(transcript) {
 	}
 }
 
+function wasATextAction(transcript) {
+	//R
+	if (/^(open|click|start)\s+reply/i.test(transcript)) {
+		return openDiscussionReply();
+	}
+
+	// Handle "reply with X" - opens discussion reply and enters text
+	const replyMatch = /(reply|respond)\s+(?:with|saying)\s+(.+)/i.exec(transcript);
+	if (replyMatch) {
+		// Ensure match exists and has the expected groups before trying to access
+		const textToEnter = replyMatch[2].trim();
+
+		// First open the reply box
+		const replyOpened = openDiscussionReply();
+
+		// Then try to enter the text (with a small delay to allow the editor to load)
+		if (replyOpened) {
+			setTimeout(() => {
+				// Use the existing function to write to the discussion box
+				const textCommand = `write ${textToEnter}`;
+				handleDiscussionBoxCommand(textCommand);
+			}, 500);
+			return true;
+		} else {
+			console.warn("Failed to open the discussion reply box.");
+			return false;
+		}
+	}
+
+	if (handleDiscussionBoxCommand(transcript)) {
+		return true;
+	} // Check if it's a discussion box command
+
+	// Check for submit commands anywhere in the transcript
+	if (/submit|send|post/i.test(transcript)) {
+		return submitDiscussionReply();
+	}
+
+	return false; // No text action matched
+	//R
+}
+
 //R
 function submitDiscussionReply() {
-	try {
-	  // Find the reply button using the exact selector from your Canvas HTML
-	  const submitButton = document.querySelector('button[data-testid="DiscussionEdit-submit"]');
+	// Find the reply button using the exact selector from your Canvas HTML
+	const submitButton = document.querySelector('button[data-testid="DiscussionEdit-submit"]');
 
-	  
-	  if (submitButton) {
+	if (submitButton) {
 		submitButton.click();
 		console.log("Successfully clicked the Reply button");
 		return true;
-	  } else {
+	} else {
 		console.warn("Reply button not found - are you on a discussion page?");
 		return false;
-	  }
-	} catch (error) {
-	  console.error("Failed to click Reply button:", error);
-	  return false;
 	}
-  }
+}
 
 function openDiscussionReply() {
-	try {
-	  // Find the reply button using the exact selector from your Canvas HTML
-	  const replyButton = document.querySelector('button[data-testid="discussion-topic-reply"]');
-	  
-	  if (replyButton) {
+	// Find the reply button using the exact selector from your Canvas HTML
+	const replyButton = document.querySelector('button[data-testid="discussion-topic-reply"]');
+
+	if (replyButton) {
 		replyButton.click();
 		console.log("Successfully clicked the Reply button");
 		return true;
-	  } else {
+	} else {
 		console.warn("Reply button not found - are you on a discussion page?");
 		return false;
-	  }
-	} catch (error) {
-	  console.error("Failed to click Reply button:", error);
-	  return false;
 	}
-  }
-
+}
 
 function handleDiscussionBoxCommand(transcript) {
 	// 1. Extract text from commands
-	const inputRegex = /(?:write|type|paste|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)?\s*(.+)/i;
+	const inputRegex =
+		/(?:write|type|paste|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)?\s*(.+)/i;
 	const match = inputRegex.exec(transcript);
-   
-	if (!match) return false; // Not a discussion box command
-	 const textToPaste = match[1].trim();
 
+	if (!match) return false; // Not a discussion box command
+	const textToPaste = match[1].trim();
 
 	if (!textToPaste) return false;
 
-	 // 2. Find the Canvas editor iframe
-	const iframe = document.querySelector('iframe.tox-edit-area__iframe, #message-body-root_ifr');
+	// 2. Find the Canvas editor iframe
+	const iframe = document.querySelector("iframe.tox-edit-area__iframe, #message-body-root_ifr");
 	if (!iframe) {
-	  console.warn("Canvas editor not found - are you on a discussion page?");
-	  return false;
+		console.warn("Canvas editor not found - are you on a discussion page?");
+		return false;
 	}
-	 try {
-	  // 3. Focus the editor 
-	  iframe.focus();
-	  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-	 
-	  // 4. Find or create the paragraph element
-	  let paragraph = iframeDoc.querySelector('p');
-	  
-	   // 5. Insert text and trigger all necessary events
-	  paragraph.textContent = textToPaste;
-	 
-	  // These events make Canvas detect the changes
-	  ['input', 'change', 'keydown', 'keyup', 'blur'].forEach(eventType => {
-		paragraph.dispatchEvent(new Event(eventType, { bubbles: true }));
-	  });
-	   console.log("Success! Pasted:", textToPaste);
-	  return true;
-	 } catch (error) {
-	  console.error("Failed to paste text:", error);
-	  return false;
+	try {
+		// 3. Focus the editor
+		iframe.focus();
+		const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+		// 4. Find or create the paragraph element
+		let paragraph = iframeDoc.querySelector("p");
+
+		// 5. Insert text and trigger all necessary events
+		paragraph.textContent = textToPaste;
+
+		// These events make Canvas detect the changes
+		["input", "change", "keydown", "keyup", "blur"].forEach((eventType) => {
+			paragraph.dispatchEvent(new Event(eventType, { bubbles: true }));
+		});
+		console.log("Success! Pasted:", textToPaste);
+		return true;
+	} catch (error) {
+		console.error("Failed to paste text:", error);
+		return false;
 	}
-  }
-  //R
- 
+}
+//R
 
 // This function uses RegEx to extract a destination from the user's voice input. It looks for various patterns that indicate what the user wants to do, such as "go to", "show me", "click", etc. If it finds a match, it cleans up the extracted text and returns it as the destination. If no match is found, it returns undefined.
 function extractDestination(transcript) {
