@@ -377,6 +377,10 @@ async function textToSpeech(narrateContent) {
 		audioElement.style.display = "none";
 		document.body.appendChild(audioElement);
 
+		// Set the volume of the audio element
+		const data = await chrome.storage.sync.get("volume");
+		audioElement.volume = (parseInt(data.volume)) / 100;
+
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
 			// Uncomment the line below, and comment the line above to test locally
