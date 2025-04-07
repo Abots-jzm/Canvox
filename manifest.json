@@ -19,7 +19,8 @@
 				"scripts/injectElements.js",
 				"scripts/content.js",
 				"scripts/sidebar.js",
-				"scripts/actions.js"
+				"scripts/actions.js",
+				"scripts/tts.js"
 			],
 			"matches": ["https://*.instructure.com/*"]
 		}
