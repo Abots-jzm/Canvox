@@ -25,6 +25,20 @@ const POSSIBLE_EXTENSION_ACTIONS = [
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
 	if (wasATextAction(transcript)) return;
+	// First check for inbox command
+    if (/(?:open|go to|show|navigate to)\s+(?:my\s+)?inbox/i.test(transcript)) {
+        const success = navigateToInbox();
+        if (success) {
+            sessionStorage.setItem(
+                "canvoxNavigation",
+                JSON.stringify({
+                    message: "Opened inbox",
+                    timestamp: Date.now(),
+                })
+            );
+            return;
+        }
+    }
 
 	const destination = extractDestination(transcript);
 
@@ -65,6 +79,32 @@ function actions(transcript) {
 		// No destination was found, use GPT to interpret
 		useGPT(transcript);
 	}
+}
+function navigateToInbox() {
+    try {
+        // Try to find inbox link in the sidebar
+        const inboxLinks = [
+            ...document.querySelectorAll('a[href*="conversations"], a[href*="inbox"]'),
+            ...document.querySelectorAll('[aria-label*="Inbox" i], [title*="Inbox" i]')
+        ];
+
+        // Click the first matching link if found
+        if (inboxLinks.length > 0) {
+            inboxLinks[0].click();
+            return true;
+        }
+
+        // Fallback: Change URL directly
+        if (window.location.pathname !== '/conversations') {
+            window.location.href = '/conversations';
+            return true;
+        }
+
+        return false;
+    } catch (e) {
+        console.error("Inbox navigation failed:", e);
+        return false;
+    }
 }
 
 function wasATextAction(transcript) {
