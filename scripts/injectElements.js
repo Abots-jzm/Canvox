@@ -91,7 +91,7 @@ function injectElements() {
 
 	window.toggleTranscript = toggleTranscript;
 
-	return { speechDisplay, speechContainer };
+	return { speechDisplay };
 }
 
 window.injectElements = injectElements;
