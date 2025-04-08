@@ -14,39 +14,6 @@
 	giveNavigationFeedback();
 	window.addEventListener("popstate", giveNavigationFeedback);
 
-	// Default settings (fallback in case defaults.js hasn't loaded)
-	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
-		hotkeyMicrophone: "x",
-		hotkeyTranscript: "t",
-		microphoneActive: false,
-		transcriptVisible: true,
-		audioInput: "default",
-	};
-
-	// Helper function to get settings with defaults
-	function getSettingWithDefault(key, defaultValue) {
-		if (window.getSettingWithDefault) {
-			return window.getSettingWithDefault(key, defaultValue);
-		}
-
-		// Fallback in case defaults.js hasn't loaded
-		return new Promise((resolve) => {
-			chrome.storage.sync.get(key, (result) => {
-				if (chrome.runtime.lastError) {
-					console.error(chrome.runtime.lastError);
-				}
-
-				// If setting doesn't exist, save and use default
-				if (result[key] === undefined) {
-					chrome.storage.sync.set({ [key]: defaultValue });
-					resolve(defaultValue);
-				} else {
-					resolve(result[key]);
-				}
-			});
-		});
-	}
-
 	// Initialize speech recognition with appropriate audio device
 	function initializeSpeechRecognition(deviceId = null) {
 		// If there's an existing recognition object and it's active, stop it
