@@ -15,11 +15,11 @@
 	"content_scripts": [
 		{
 			"js": [
+				"scripts/settings.js",
 				"scripts/injectElements.js",
 				"scripts/content.js",
 				"scripts/sidebar.js",
-				"scripts/actions.js",
-				"scripts/settings.js"
+				"scripts/actions.js"
 			],
 			"matches": ["https://*.instructure.com/*"]
 		}

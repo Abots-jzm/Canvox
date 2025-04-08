@@ -20,7 +20,7 @@ const POSSIBLE_EXTENSION_ACTIONS = [
 	"volume mute",
 	"volume [0-9]{1,3}",
 	"toggletranscript",
-]
+];
 
 // This function decides what to do with the user's voice input. It first tries to extract a destination using RegEx patterns. If it finds one, it checks if it's a sidebar action and navigates accordingly. If it doesn't find a match, it calls the useGPT function to interpret the command using GPT.
 function actions(transcript) {
@@ -151,10 +151,8 @@ function handleDiscussionBoxCommand(transcript) {
 
 	// 2. Find the Canvas editor iframe
 	const iframe = document.querySelector("iframe.tox-edit-area__iframe, #message-body-root_ifr");
-	if (!iframe) {
-		console.warn("Canvas editor not found - are you on a discussion page?");
-		return false;
-	}
+	if (!iframe) return false; //Not on discussion page
+
 	try {
 		// 3. Focus the editor
 		iframe.focus();
@@ -207,18 +205,13 @@ function extractDestination(transcript) {
 
 	// Extension actions - "mute microphone", "volume up", etc.
 	// Pattern 7: microphone mute
-	const microphoneMute =
-		/(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
+	const microphoneMute = /(mute)?\s*(?:the|my\s+)?mic(rophone)?(mute)?/i;
 	// Pattern 8: Volume mute, up, down
-	const volumeShift =
-		/(turn|change)?\s*volume\s+(up|down|mute)/i;
+	const volumeShift = /(turn|change)?\s*volume\s+(up|down|mute)/i;
 	// Pattern 9: Set volume to specific number
-	const setVolume =
-		/(set|change)?\s*volume\s*(to|set)?\s*(\d+)/i;
+	const setVolume = /(set|change)?\s*volume\s*(to|set)?\s*(\d+)/i;
 	// Pattern 10: Toggle transcript
-	const toggleTranscript =
-		/(show|hide|toggle)\s+transcript/i;
-
+	const toggleTranscript = /(show|hide|toggle)\s+transcript/i;
 
 	let match;
 	let destination;
@@ -227,7 +220,12 @@ function extractDestination(transcript) {
 	if ((match = microphoneMute.exec(transcript))) {
 		destination = "micmute";
 	} else if ((match = volumeShift.exec(transcript))) {
-		destination = match[match.length - 1] === "mute" ? "volume mute" : match[match.length - 1] === "up" ? "volume up" : "volume down";
+		destination =
+			match[match.length - 1] === "mute"
+				? "volume mute"
+				: match[match.length - 1] === "up"
+				? "volume up"
+				: "volume down";
 	} else if ((match = setVolume.exec(transcript))) {
 		destination = `volume ${match[match.length - 1]}`;
 	} else if ((match = toggleTranscript.exec(transcript))) {
@@ -403,8 +401,8 @@ function extensionActionRouter(destination) {
 
 	// First check if destination is a volume set command
 	// since the case block would need 100 cases for each possible regex here
-	if (destination.match(/volume\s[0-9]+/)){
-		destination = destination.replace(/volume\s/, "")
+	if (destination.match(/volume\s[0-9]+/)) {
+		destination = destination.replace(/volume\s/, "");
 		window.setVolume(destination);
 		return true;
 	}
@@ -493,7 +491,7 @@ async function textToSpeech(narrateContent) {
 
 		// Set the volume of the audio element
 		const data = await chrome.storage.sync.get("volume");
-		audioElement.volume = (parseInt(data.volume)) / 100;
+		audioElement.volume = parseInt(data.volume) / 100;
 
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
@@ -527,73 +525,72 @@ async function textToSpeech(narrateContent) {
 }
 
 function collectMainContent() {
-    // Collect the main content of the page for narration
-    const mainContent = document.querySelector(".ic-Layout-contentMain");
-    if (mainContent) {
-        return mainContent.textContent || "";
-    }
-    return "";
+	// Collect the main content of the page for narration
+	const mainContent = document.querySelector(".ic-Layout-contentMain");
+	if (mainContent) {
+		return mainContent.textContent || "";
+	}
+	return "";
 }
 
 // Add this new function below collectMainContent
 async function narratePage(transcript = "") {
-    try {
-        console.log("Preparing page narration with content summary...");
-        
-        // Get the page content
-        let pageContent = collectMainContent();
-        
-        // Get the page title
-        const pageTitle = document.title || "Current page";
-        
-        // Clean up the content - remove excessive whitespace
-        pageContent = pageContent.replace(/\s+/g, ' ').trim();
-        
-        // Create a summary prompt
-        const narrateText = `Page title: ${pageTitle}. Content: ${pageContent}`;
-        
-        // Create audio element to play the response
-        const audioElement = document.createElement("audio");
-        audioElement.controls = false;
-        audioElement.style.display = "none";
-        document.body.appendChild(audioElement);
-        
-        // Make a direct call to the narration API endpoint
-        const response = await fetch(
-            "https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/narrate",
-            // Uncomment the line below, and comment the line above to test locally
-            // 'http://localhost:3000/api/narrate',
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    page_content: narrateText,
-                    user_transcript: transcript,
-                    summarize: true
-                }),
-            }
-        );
-        
-        if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-        }
-        
-        // Create a URL for the audio blob
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        // Set the source and play
-        audioElement.src = audioUrl;
-        await audioElement.play();
-        
-        // Dispatch a custom event that content.js will listen for
-        const narrateEvent = new CustomEvent("narrate-ready", { detail: { audioElement } });
-        document.dispatchEvent(narrateEvent);
-        
-        return true;
-    } catch (error) {
-        console.error("Error in narratePage function:", error);
-        return false;
-    }
-}
+	try {
+		console.log("Preparing page narration with content summary...");
 
+		// Get the page content
+		let pageContent = collectMainContent();
+
+		// Get the page title
+		const pageTitle = document.title || "Current page";
+
+		// Clean up the content - remove excessive whitespace
+		pageContent = pageContent.replace(/\s+/g, " ").trim();
+
+		// Create a summary prompt
+		const narrateText = `Page title: ${pageTitle}. Content: ${pageContent}`;
+
+		// Create audio element to play the response
+		const audioElement = document.createElement("audio");
+		audioElement.controls = false;
+		audioElement.style.display = "none";
+		document.body.appendChild(audioElement);
+
+		// Make a direct call to the narration API endpoint
+		const response = await fetch(
+			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/narrate",
+			// Uncomment the line below, and comment the line above to test locally
+			// 'http://localhost:3000/api/narrate',
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					page_content: narrateText,
+					user_transcript: transcript,
+					summarize: true,
+				}),
+			}
+		);
+
+		if (!response.ok) {
+			throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+		}
+
+		// Create a URL for the audio blob
+		const audioBlob = await response.blob();
+		const audioUrl = URL.createObjectURL(audioBlob);
+
+		// Set the source and play
+		audioElement.src = audioUrl;
+		await audioElement.play();
+
+		// Dispatch a custom event that content.js will listen for
+		const narrateEvent = new CustomEvent("narrate-ready", { detail: { audioElement } });
+		document.dispatchEvent(narrateEvent);
+
+		return true;
+	} catch (error) {
+		console.error("Error in narratePage function:", error);
+		return false;
+	}
+}

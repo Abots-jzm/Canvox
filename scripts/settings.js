@@ -2,7 +2,7 @@
  * Default settings for Canvox extension
  * This file centralizes all default values used across the application
  */
-window.DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS = {
 	// Theme
 	theme: "dark",
 
@@ -23,27 +23,31 @@ window.DEFAULT_SETTINGS = {
 	audioOutput: "default",
 
 	// Volume
-	volume: 50, // Scale 0-100
+	volume: 100, // Scale 0-100
 };
 
 /**
  * Helper function to get setting with default
  * This centralizes the logic for fetching settings with defaults
  */
-window.getSettingWithDefault = function (key, defaultValue) {
+function getSettingWithDefault(key, defaultValue) {
 	return new Promise((resolve) => {
 		chrome.storage.sync.get(key, (result) => {
 			if (chrome.runtime.lastError) {
-				console.error(chrome.runtime.lastError);
+				console.warn(chrome.runtime.lastError);
 			}
 
 			// If setting doesn't exist, save and use default
 			if (result[key] === undefined) {
-				chrome.storage.sync.set({ [key]: defaultValue || window.DEFAULT_SETTINGS[key] });
-				resolve(defaultValue || window.DEFAULT_SETTINGS[key]);
+				chrome.storage.sync.set({ [key]: defaultValue || DEFAULT_SETTINGS[key] });
+				resolve(defaultValue || DEFAULT_SETTINGS[key]);
 			} else {
 				resolve(result[key]);
 			}
 		});
 	});
-};
+}
+
+// Make them available to other scripts
+globalThis.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
+globalThis.getSettingWithDefault = getSettingWithDefault;
