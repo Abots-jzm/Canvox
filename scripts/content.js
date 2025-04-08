@@ -1,44 +1,18 @@
 // This is the entry point for the content script of the Canvox extension. It initializes speech recognition, handles hotkeys, and manages microphone state.
 // It also listens for messages from the popup and updates the UI accordingly.
 (function () {
-	const { speechDisplay, speechContainer } = window.injectElements();
-
-	// Check for navigation confirmation messages
-	function checkNavigationMessages() {
-		try {
-			const navigationData = sessionStorage.getItem("canvoxNavigation");
-			if (navigationData) {
-				const { message, timestamp } = JSON.parse(navigationData);
-
-				// Only process messages that are less than 5 seconds old
-				if (Date.now() - timestamp < 5000) {
-					// Play the confirmation message
-					setTimeout(() => {
-						textToSpeech(message);
-					}, 500); // Small delay to ensure the page has loaded
-				}
-
-				// Clear the message after processing
-				sessionStorage.removeItem("canvoxNavigation");
-			}
-		} catch (error) {
-			console.error("Error processing navigation message:", error);
-		}
-	}
+	const { speechDisplay } = window.injectElements();
 
 	// Check if the browser supports the SpeechRecognition API
-	// If not, exit early to avoid errors
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	if (!SpeechRecognition) return;
 
 	let recognition = null;
 	let isRecognizing = false;
 
-	// Run the navigation message check when the page loads
-	checkNavigationMessages();
-
-	// Also check after any page state changes
-	window.addEventListener("popstate", checkNavigationMessages);
+	// Give navigation feedback on page load and when page  history state changes
+	giveNavigationFeedback();
+	window.addEventListener("popstate", giveNavigationFeedback);
 
 	// Default settings (fallback in case defaults.js hasn't loaded)
 	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
@@ -181,7 +155,7 @@
 
 		// Get the current volume from storage
 		chrome.storage.sync.get("volume", (data) => {
-			currVol = parseInt(data.volume) // Retrieve current volume
+			currVol = parseInt(data.volume); // Retrieve current volume
 			if (currVol === undefined) {
 				// If volume is not set, default to 50
 				currVol = DEFAULT_SETTINGS.volume;
@@ -198,7 +172,7 @@
 				newVol = Math.max(0, currVol - 10); // Decrease volume by 10, min 0
 			}
 
-			chrome.storage.sync.set({volume: newVol});		
+			chrome.storage.sync.set({ volume: newVol });
 			console.log(`Volume adjusted to: ${newVol}`); // Log the new volume for debugging
 		}, 100); // Change newVol and store after a short delay to ensure currVol is set correctly
 	}
@@ -209,16 +183,15 @@
 		// This function can be used to set the volume of the speech synthesis or any other audio output
 
 		// Ensure volume is between 0 and 100
-		volume = Math.min(100, volume); 
+		volume = Math.min(100, volume);
 		volume = Math.max(0, volume);
 
 		// Set the volume in the storage
 		chrome.storage.sync.set({ volume: volume });
 
-		setTimeout(function(){
+		setTimeout(function () {
 			console.log(`Volume set to: ${volume}`); // Log the new volume
 		}, 100);
-
 	}
 
 	window.setVolume = setVolume;
@@ -366,3 +339,26 @@
 		}
 	});
 })();
+
+// Check for navigation confirmation messages
+function giveNavigationFeedback() {
+	try {
+		const navigationData = sessionStorage.getItem("canvoxNavigation");
+		if (navigationData) {
+			const { message, timestamp } = JSON.parse(navigationData);
+
+			// Only process messages that are less than 5 seconds old
+			if (Date.now() - timestamp < 5000) {
+				// Play the confirmation message
+				setTimeout(() => {
+					textToSpeech(message);
+				}, 500); // Small delay to ensure the page has loaded
+			}
+
+			// Clear the message after processing
+			sessionStorage.removeItem("canvoxNavigation");
+		}
+	} catch (error) {
+		console.warn("Error processing navigation message:", error);
+	}
+}

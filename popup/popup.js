@@ -255,17 +255,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	transcriptButton.addEventListener("click", () => {
 		chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 			if (tabs[0]) {
-				chrome.tabs.sendMessage(
-					tabs[0].id,
-					{
-						action: "toggleTranscript",
-					},
-					(response) => {
-						if (response && response.success) {
-							console.log("Transcript visibility toggled:", response.isVisible);
-						}
-					}
-				);
+				chrome.tabs.sendMessage(tabs[0].id, {
+					action: "toggleTranscript",
+				});
 			}
 		});
 	});
