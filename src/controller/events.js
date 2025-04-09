@@ -2,6 +2,7 @@ import { initRecognition } from "../model/recognition.js";
 import { toggleMicrophone, getSettingWithDefault, DEFAULT_SETTINGS, isHotkeyMatch } from "../model/settings.js";
 import { giveNavigationFeedback } from "../model/tts.js";
 import { toggleTranscript } from "./injectElements.js";
+import { routeActions } from "./router.js";
 
 function setupListeners(recognitionState) {
 	// Navigation event listener
@@ -91,6 +92,14 @@ function setupListeners(recognitionState) {
 			const newVisibility = toggleTranscript();
 			sendResponse({ success: true, isVisible: newVisibility });
 			return true;
+		}
+	});
+
+	// This is for users who may not want to use the microphone or have accessibility needs
+	document.querySelector(".voice-input").addEventListener("keydown", (e) => {
+		if (e.key === "Enter") {
+			routeActions(e.target.value);
+			e.target.value = ""; // Clear the input after processing
 		}
 	});
 }

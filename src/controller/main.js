@@ -1,7 +1,7 @@
 "use strict";
 
 import { injectElements, toggleTranscript } from "./injectElements.js";
-import { setupListeners } from "./listeners.js";
+import { setupListeners } from "./events.js";
 import { giveNavigationFeedback } from "../model/tts.js";
 import { initRecognition } from "../model/recognition.js";
 import { DEFAULT_SETTINGS, getSettingWithDefault } from "../model/settings.js";
@@ -18,6 +18,7 @@ export async function main() {
 		return;
 	}
 
+	//Global state for speech recogniton
 	const recognitionState = {
 		recognition: null,
 		isRecognizing: false,
