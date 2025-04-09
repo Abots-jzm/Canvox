@@ -3,6 +3,8 @@
 import { injectElements, toggleTranscript } from "./injectElements.js";
 import { setupListeners } from "./listeners.js";
 import { giveNavigationFeedback } from "../model/tts.js";
+import { initRecognition } from "../model/recognition.js";
+import { DEFAULT_SETTINGS, getSettingWithDefault } from "../model/settings.js";
 
 //Entry point for the extension
 export async function main() {
@@ -22,6 +24,19 @@ export async function main() {
 		speechDisplay,
 	};
 
-	setupListeners();
+	setupListeners(recognitionState);
 	giveNavigationFeedback();
+
+	// Persist microphone settings accross page navigation
+	const [isActive, deviceId] = await Promise.all([
+		getSettingWithDefault("microphoneActive", DEFAULT_SETTINGS.microphoneActive),
+		getSettingWithDefault("audioInput", DEFAULT_SETTINGS.audioInput),
+	]);
+	initRecognition(recognitionState, deviceId);
+
+	// Start recognition if it was previously active
+	if (isActive && !recognitionState.isRecognizing) {
+		recognitionState.recognition.start();
+		recognitionState.isRecognizing = true;
+	}
 }
