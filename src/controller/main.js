@@ -6,20 +6,22 @@ import { giveNavigationFeedback } from "../model/tts.js";
 
 //Entry point for the extension
 export async function main() {
-	// Check if the browser supports the SpeechRecognition API
+	//Initialize Transcript bar
 	const { speechDisplay } = injectElements();
 
+	// Check if the browser supports the SpeechRecognition API
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 	if (!SpeechRecognition) {
 		speechDisplay.innerHTML = "Speech Recognition not supported in this browser.";
 		return;
 	}
 
+	const recognitionState = {
+		recognition: null,
+		isRecognizing: false,
+		speechDisplay,
+	};
+
 	setupListeners();
 	giveNavigationFeedback();
-
-	// let recognition = null;
-	// let isRecognizing = false;
-
-	// window.addEventListener("popstate", giveNavigationFeedback);
 }
