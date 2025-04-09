@@ -1,7 +1,8 @@
 "use strict";
 
-import { print } from "../model/test.js";
+import { injectElements, toggleTranscript } from "./injectElements.js";
 
+//Entry point for the extension
 export async function main() {
-	print("hello from main.js");
+	const { speechDisplay } = injectElements();
 }
