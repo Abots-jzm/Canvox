@@ -1,3 +1,5 @@
+import { routeActions } from "../controller/router.js";
+
 // start speech recognition with appropriate audio device
 function initRecognition(recognitionState, deviceId = null) {
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -38,7 +40,7 @@ function initRecognition(recognitionState, deviceId = null) {
 		window.debounceTimer = setTimeout(() => {
 			// IMPORTANT: This is where we call pass control to the actions.js script
 			// to handle the speech commands. The actions function should be defined in actions.js.
-			// window.actions(transcript);
+			routeActions(transcript);
 		}, 1000);
 	};
 
