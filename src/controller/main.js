@@ -2,6 +2,6 @@
 
 import { print } from "../model/test.js";
 
-export function main() {
+export async function main() {
 	print("hello from main.js");
 }
