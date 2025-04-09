@@ -1,3 +1,5 @@
+"use strict";
+
 document.addEventListener("DOMContentLoaded", () => {
 	const toggleButton = document.querySelector(".theme-toggle");
 	const transcriptButton = document.querySelector(".transcript");
