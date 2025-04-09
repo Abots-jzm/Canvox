@@ -9,23 +9,24 @@
 		"128": "images/icons/icon128.png"
 	},
 	"action": {
-		"default_popup": "popup/popup.html",
+		"default_popup": "src/view/popup.html",
 		"default_title": "Canvox\n An accessibility tool for blind and the visually impaired students"
 	},
 	"content_scripts": [
 		{
-			"js": [
-				"scripts/settings.js",
-				"scripts/injectElements.js",
-				"scripts/content.js",
-				"scripts/sidebar.js",
-				"scripts/actions.js"
-			],
+			"js": ["content.js"],
 			"matches": ["https://*.instructure.com/*"]
 		}
 	],
 	"background": {
-		"service_worker": "background.js"
+		"service_worker": "background.js",
+		"type": "module"
 	},
-	"permissions": ["storage", "activeTab", "scripting"]
+	"permissions": ["storage", "activeTab", "scripting"],
+	"web_accessible_resources": [
+		{
+			"resources": ["src/**/*.js"],
+			"matches": ["<all_urls>"]
+		}
+	]
 }
