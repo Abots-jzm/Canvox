@@ -1,5 +1,5 @@
 // start speech recognition with appropriate audio device
-function startRecogition(recognitionState, deviceId = null) {
+function initRecognition(recognitionState, deviceId = null) {
 	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 	// If there's an existing recognition object and it's active, stop it
@@ -71,4 +71,4 @@ function startRecogition(recognitionState, deviceId = null) {
 	recognitionState.recognition = newRecognition;
 }
 
-export { startRecogition };
+export { initRecognition };
