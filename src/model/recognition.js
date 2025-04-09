@@ -30,7 +30,7 @@ function initRecognition(recognitionState, deviceId = null) {
 		for (let i = event.resultIndex; i < event.results.length; i++) {
 			transcript += event.results[i][0].transcript;
 		}
-		speechDisplay.textContent = transcript;
+		recognitionState.speechDisplay.textContent = transcript;
 
 		// We want to wait a bit before sending the transcript to actions to avoid flooding it with too many calls
 		// This debounce mechanism ensures that we only call actions once the user has paused speaking
@@ -43,7 +43,7 @@ function initRecognition(recognitionState, deviceId = null) {
 	};
 
 	// This event is fired when speech recognition detects no speech for a while and stops
-	new_recognition.onend = () => {
+	newRecognition.onend = () => {
 		recognitionState.isRecognizing = false;
 		// Update storage when recognition ends
 		chrome.storage.sync.set({ microphoneActive: false });
