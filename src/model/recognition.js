@@ -15,6 +15,7 @@ function initRecognition(recognitionState, deviceId = null) {
 	newRecognition.continuous = true;
 	newRecognition.interimResults = true;
 	newRecognition.lang = "en-US";
+	recognitionState.recognition = newRecognition;
 
 	// If a specific device ID is provided and it's not the default
 	if (deviceId && deviceId !== "default") {
@@ -40,7 +41,7 @@ function initRecognition(recognitionState, deviceId = null) {
 		window.debounceTimer = setTimeout(() => {
 			// IMPORTANT: This is where we call pass control to the actions.js script
 			// to handle the speech commands. The actions function should be defined in actions.js.
-			routeActions(transcript);
+			routeActions(transcript, recognitionState);
 		}, 1000);
 	};
 
@@ -69,8 +70,6 @@ function initRecognition(recognitionState, deviceId = null) {
 			console.error("Failed to restart speech recognition:", e);
 		}
 	}
-
-	recognitionState.recognition = newRecognition;
 }
 
 export { initRecognition };
