@@ -136,4 +136,55 @@ function isHotkeyMatch(event, hotkey) {
 	);
 }
 
-export { getSettingWithDefault, DEFAULT_SETTINGS, toggleMicrophone, adjustVolume, setVolume, isHotkeyMatch };
+function extensionActionRouter(destination) {
+	// This function routes to extension-specific actions
+	// based on the destination provided
+
+	// First check if destination is a volume set command
+	// since the case block would need 100 cases for each possible regex here
+	if (destination.match(/volume\s[0-9]+/)) {
+		destination = destination.replace(/volume\s/, "");
+		setVolume(destination);
+		return true;
+	}
+
+	// Handle other extension actions
+	switch (destination) {
+		case "micmute":
+			// Handle microphone mute action
+			toggleMicrophone(); // Call the function to toggle the microphone state
+			break;
+		case "volume up":
+		case "volume down":
+		case "volume mute":
+			// Handle volume adjustment actions
+			adjustVolume(destination);
+			break;
+		case "toggletranscript":
+			// Handle toggle transcript action
+			toggleTranscript(); // Call the function to toggle the transcript visibility
+			break;
+		default:
+			return false; // No matching action found
+	}
+	return true; // Successfully handled an extension action
+}
+
+export const POSSIBLE_EXTENSION_ACTIONS = [
+	"micmute",
+	"volume up",
+	"volume down",
+	"volume mute",
+	"volume [0-9]{1,3}",
+	"toggletranscript",
+];
+
+export {
+	getSettingWithDefault,
+	DEFAULT_SETTINGS,
+	toggleMicrophone,
+	adjustVolume,
+	setVolume,
+	isHotkeyMatch,
+	extensionActionRouter,
+};

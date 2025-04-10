@@ -1,26 +1,9 @@
+import { useGPT } from "../model/gpt.js";
+import { navigate } from "../model/navigation.js";
+import { extensionActionRouter } from "../model/settings.js";
+import { sidebarActionsRouter } from "../model/sidebar.js";
 import { wasATextAction } from "../model/text.js";
 import { narratePage } from "../model/tts.js";
-
-const POSSIBLE_SIDEBAR_DESTINATIONS = [
-	"home",
-	"dashboard",
-	"calendar",
-	"courses",
-	"classes",
-	"groups",
-	"inbox",
-	"messages",
-	"back",
-];
-
-const POSSIBLE_EXTENSION_ACTIONS = [
-	"micmute",
-	"volume up",
-	"volume down",
-	"volume mute",
-	"volume [0-9]{1,3}",
-	"toggletranscript",
-];
 
 function routeActions(transcript) {
 	//check for text actions first
@@ -32,6 +15,38 @@ function routeActions(transcript) {
 	if (destination === "narrate") {
 		narratePage(transcript);
 		return;
+	}
+
+	// Handles navigation requests
+	if (destination) {
+		// Check if the destination is a sidebar action
+		const wasASidebarAction = sidebarActionsRouter(destination);
+		if (wasASidebarAction) {
+			// Store the confirmation message in sessionStorage
+			sessionStorage.setItem(
+				"canvoxNavigation",
+				JSON.stringify({
+					message: `Opened ${destination}`,
+					timestamp: Date.now(),
+				})
+			);
+			return;
+		}
+		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
+			// If the destination is related to microphone, volume, or transcript, trigger the action directly
+			// Call the extension action router to handle specific actions'
+			extensionActionRouter(destination);
+			return;
+		}
+
+		const navigationSuccessful = navigate(destination);
+		if (!navigationSuccessful) {
+			// 	// Only call useGPT if navigation failed
+			useGPT(transcript);
+		}
+	} else {
+		// No destination was found, use GPT to interpret
+		useGPT(transcript);
 	}
 }
 
