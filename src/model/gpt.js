@@ -5,7 +5,7 @@ import { textToSpeech } from "./tts.js";
 import { extensionActionRouter } from "./settings.js";
 
 // This is the function that handles calling the GPT API to interpret the user's command when RegEx fails to find a match. It sends the user's voice input and the possible destinations to the API, and then processes the response to navigate to the appropriate destination. If the API call fails, it logs the error to the console.
-async function useGPT(transcript) {
+async function useGPT(transcript, recognitionState) {
 	// If the RegEx fails to match,
 	// we can fallback to a GPT check
 	try {
@@ -61,7 +61,7 @@ async function useGPT(transcript) {
 					return;
 				}
 
-				const wasAnExtensionAction = extensionActionRouter(destination);
+				const wasAnExtensionAction = extensionActionRouter(destination, recognitionState);
 				if (!wasASidebarAction && !wasAnExtensionAction) {
 					navigate(destination);
 				}

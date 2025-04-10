@@ -5,7 +5,7 @@ import { sidebarActionsRouter } from "../model/sidebar.js";
 import { wasATextAction } from "../model/text.js";
 import { narratePage } from "../model/tts.js";
 
-function routeActions(transcript) {
+function routeActions(transcript, recognitionState) {
 	//check for text actions first
 	if (wasATextAction(transcript)) return;
 
@@ -35,18 +35,18 @@ function routeActions(transcript) {
 		if (/(micmute|volume.*|toggletranscript)/i.test(destination)) {
 			// If the destination is related to microphone, volume, or transcript, trigger the action directly
 			// Call the extension action router to handle specific actions'
-			extensionActionRouter(destination);
+			extensionActionRouter(destination, recognitionState);
 			return;
 		}
 
 		const navigationSuccessful = navigate(destination);
 		if (!navigationSuccessful) {
 			// 	// Only call useGPT if navigation failed
-			useGPT(transcript);
+			useGPT(transcript, recognitionState);
 		}
 	} else {
 		// No destination was found, use GPT to interpret
-		useGPT(transcript);
+		useGPT(transcript, recognitionState);
 	}
 }
 

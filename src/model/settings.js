@@ -1,4 +1,5 @@
 import { initRecognition } from "./recognition.js";
+import { toggleTranscript } from "../controller/injectElements.js";
 
 /**
  * Default settings for Canvox extension
@@ -136,7 +137,7 @@ function isHotkeyMatch(event, hotkey) {
 	);
 }
 
-function extensionActionRouter(destination) {
+function extensionActionRouter(destination, recognitionState) {
 	// This function routes to extension-specific actions
 	// based on the destination provided
 
@@ -152,7 +153,7 @@ function extensionActionRouter(destination) {
 	switch (destination) {
 		case "micmute":
 			// Handle microphone mute action
-			toggleMicrophone(); // Call the function to toggle the microphone state
+			toggleMicrophone(recognitionState); // Call the function to toggle the microphone state
 			break;
 		case "volume up":
 		case "volume down":
