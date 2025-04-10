@@ -1,6 +1,8 @@
+let speechContainer;
+
 // This is the script responsible for inserting the transcript elements into the page.
 function injectElements() {
-	const speechContainer = document.createElement("div");
+	speechContainer = document.createElement("div");
 	Object.assign(speechContainer.style, {
 		position: "fixed",
 		bottom: "0",
@@ -77,21 +79,18 @@ function injectElements() {
 			speechContainer.style.display = "block";
 		}
 	});
-
-	// Function to toggle transcript visibility
-	function toggleTranscript() {
-		const isVisible = speechContainer.style.display !== "none";
-		speechContainer.style.display = isVisible ? "none" : "block";
-
-		// Save the state to storage
-		chrome.storage.sync.set({ transcriptVisible: !isVisible });
-
-		return !isVisible; // Return the new visibility state
-	}
-
-	window.toggleTranscript = toggleTranscript;
-
-	return { speechDisplay, speechContainer };
+	return { speechDisplay };
 }
 
-window.injectElements = injectElements;
+// Function to toggle transcript visibility
+function toggleTranscript() {
+	const isVisible = speechContainer.style.display !== "none";
+	speechContainer.style.display = isVisible ? "none" : "block";
+
+	// Save the state to storage
+	chrome.storage.sync.set({ transcriptVisible: !isVisible });
+
+	return !isVisible; // Return the new visibility state
+}
+
+export { injectElements, toggleTranscript };
