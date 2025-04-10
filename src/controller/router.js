@@ -1,5 +1,8 @@
+import { wasATextAction } from "../model/text.js";
+
 function routeActions(transcript) {
-	console.log(transcript);
+	//check for text actions first
+	if (wasATextAction(transcript)) return;
 }
 
 export { routeActions };
