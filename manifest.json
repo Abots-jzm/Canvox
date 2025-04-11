@@ -14,7 +14,18 @@
 	},
 	"content_scripts": [
 		{
+<<<<<<< HEAD
 			"js": ["content.js"],
+=======
+			"js": [
+				"scripts/defaults.js",
+				"scripts/injectElements.js",
+				"scripts/content.js",
+				"scripts/sidebar.js",
+				"scripts/actions.js",
+				"scripts/tts.js"
+			],
+>>>>>>> 546fbbd8f509db70753ef34c829163ba680dd83c
 			"matches": ["https://*.instructure.com/*"]
 		}
 	],
