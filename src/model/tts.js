@@ -1,5 +1,5 @@
 // Check for navigation confirmation messages
-function giveNavigationFeedback() {
+async function giveNavigationFeedback() {
 	try {
 		const navigationData = sessionStorage.getItem("canvoxNavigation");
 		if (navigationData) {
@@ -7,10 +7,49 @@ function giveNavigationFeedback() {
 
 			// Only process messages that are less than 5 seconds old
 			if (Date.now() - timestamp < 5000) {
-				// Play the confirmation message
-				setTimeout(() => {
-					textToSpeech(message);
-				}, 500); // Small delay to ensure the page has loaded
+				// Small delay to ensure the page has loaded
+				setTimeout(async () => {
+					// Create an audio element to play the response
+					const audioElement = document.createElement("audio");
+					audioElement.controls = false;
+					audioElement.style.display = "none";
+					document.body.appendChild(audioElement);
+
+					// Set the volume of the audio element
+					const data = await chrome.storage.sync.get("volume");
+					audioElement.volume = parseInt(data.volume) / 100;
+
+					try {
+						const response = await fetch("https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/navigate", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								narrate_Content: message,
+								is_navigation: true,
+							}),
+						});
+
+						if (!response.ok) {
+							throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+						}
+
+						// Create a URL for the audio blob
+						const audioBlob = await response.blob();
+						const audioUrl = URL.createObjectURL(audioBlob);
+
+						// Set the source and play
+						audioElement.src = audioUrl;
+						await audioElement.play();
+
+						// Dispatch a custom event specifically for navigation feedback
+						const navEvent = new CustomEvent("navigation-feedback", {
+							detail: { audioElement, message },
+						});
+						document.dispatchEvent(navEvent);
+					} catch (error) {
+						console.warn("Error processing navigation message:", error);
+					}
+				}, 500);
 			}
 
 			// Clear the message after processing
