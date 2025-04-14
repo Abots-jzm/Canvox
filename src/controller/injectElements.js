@@ -1,7 +1,14 @@
 let speechContainer;
+let globalAudioElement;
 
 // This is the script responsible for inserting the transcript elements into the page.
 function injectElements() {
+	// Create global audio element
+	globalAudioElement = document.createElement("audio");
+	globalAudioElement.controls = false;
+	globalAudioElement.style.display = "none";
+	document.body.appendChild(globalAudioElement);
+
 	speechContainer = document.createElement("div");
 	Object.assign(speechContainer.style, {
 		position: "fixed",
@@ -93,4 +100,23 @@ function toggleTranscript() {
 	return !isVisible; // Return the new visibility state
 }
 
-export { injectElements, toggleTranscript };
+// Function to get the global audio element
+function getAudioElement() {
+	// If audio is currently playing, stop it
+	if (!globalAudioElement.paused) {
+		globalAudioElement.pause();
+		globalAudioElement.currentTime = 0;
+	}
+	return globalAudioElement;
+}
+
+// Function to play audio
+async function playAudio(audioUrl, volume) {
+	const audioElement = getAudioElement();
+	audioElement.volume = volume;
+	audioElement.src = audioUrl;
+	await audioElement.play();
+	return audioElement;
+}
+
+export { injectElements, toggleTranscript, getAudioElement, playAudio };
