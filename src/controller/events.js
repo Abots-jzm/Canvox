@@ -1,7 +1,7 @@
 import { initRecognition } from "../model/recognition.js";
 import { toggleMicrophone, getSettingWithDefault, DEFAULT_SETTINGS, isHotkeyMatch } from "../model/settings.js";
 import { giveNavigationFeedback } from "../model/tts.js";
-import { toggleTranscript } from "./injectElements.js";
+import { toggleTranscript, stopAudio } from "./injectElements.js";
 import { routeActions } from "./router.js";
 
 function setupListeners(recognitionState) {
@@ -13,6 +13,10 @@ function setupListeners(recognitionState) {
 		// Microphone hotkey
 		const hotkey = await getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone);
 		if (isHotkeyMatch(e, hotkey)) {
+			// Stop audio if microphone is being turned on
+			if (!recognitionState.isRecognizing) {
+				stopAudio();
+			}
 			toggleMicrophone(recognitionState);
 			e.preventDefault(); // Prevent browser's default handling of this key
 		}
@@ -59,6 +63,9 @@ function setupListeners(recognitionState) {
 	chrome.storage.onChanged.addListener(async (changes) => {
 		if (changes.microphoneActive && changes.microphoneActive.newValue !== recognitionState.isRecognizing) {
 			if (changes.microphoneActive.newValue === true && !recognitionState.isRecognizing) {
+				// Stop audio playback when turning microphone on
+				stopAudio();
+
 				if (!recognitionState.recognition) {
 					const deviceId = await getSettingWithDefault("audioInput", DEFAULT_SETTINGS.audioInput);
 					initRecognition(recognitionState, deviceId);
