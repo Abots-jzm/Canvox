@@ -26,4 +26,4 @@ It will provide features including voice readout of screen content, screen summa
 
 # URL Matching
 
-We are aware that not all schools' Canvas urls are covered in the matching protocol, and thus students at some schools may not be able to use the extension. If you encounter this issue, please create an issue in the github repo with the `enhancement` label and the name of the school that is not supported, and a developer will add support as soon as possible.
+We are aware that not all schools' Canvas urls are covered in the matching protocol, and thus students at some schools may not be able to use the extension. If you encounter this issue, please create an issue in the [github repo](https://github.com/Abots-jzm/Canvox/issues) with the `enhancement` label and the name of the school that is not supported, and a developer will add support as soon as possible.
