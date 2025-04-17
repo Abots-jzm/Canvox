@@ -22,3 +22,8 @@ It will provide features including voice readout of screen content, screen summa
 5. Select the directory containing the extension files
 6. The extension should now appear in your Chrome toolbar
 7. Make sure to pin the extension for easy access!
+
+
+# URL Matching
+
+We are aware that not all schools' Canvas urls are covered in the matching protocol, and thus students at some schools may not be able to use the extension. If you encounter this issue, please create an issue in the [github repo](https://github.com/Abots-jzm/Canvox/issues) with the `enhancement` label and the name of the school that is not supported, and a developer will add support as soon as possible.
