@@ -1,4 +1,5 @@
 import { getAudioElement, playAudio } from '../controller/injectElements.js';
+import { toggleMicrophone } from './settings.js';
 
 // Check for navigation confirmation messages
 async function giveNavigationFeedback() {
@@ -150,8 +151,21 @@ async function textToSpeech(narrateContent) {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
-			// Use the shared audio element to play
+		// Check if mic is active before activating TTS
+		let micActive = recognitionState.isRecognizing;
+
+		// If mic is on, turn it off to play audio
+		if (micActive){
+			toggleMicrophone();
+		}
+		
+		// Use the shared audio element to play
 		const audioElement = await playAudio(audioUrl, volume);
+
+		// If mic was on before TTS, turn it back on
+		if (micActive){
+			toggleMicrophone();
+		}
 
 		// Dispatch a custom event that content.js will listen for
 		const ttsEvent = new CustomEvent("tts-ready", { detail: { audioElement } });
