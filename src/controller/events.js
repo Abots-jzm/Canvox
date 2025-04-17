@@ -4,10 +4,12 @@ import { giveNavigationFeedback } from "../model/tts.js";
 import { toggleTranscript } from "./injectElements.js";
 import { routeActions } from "./router.js";
 import { checkNewAnnouncements } from "../model/announcementUpdate.js";
+import { checkNewModuleItems } from "../model/announcementUpdate.js";
 
 function setupListeners(recognitionState) {
 
 	setTimeout(checkNewAnnouncements, 1500);
+	setTimeout(checkNewModuleItems, 1500);
 
 	// Navigation event listener
 	window.addEventListener("popstate", giveNavigationFeedback);
