@@ -15,7 +15,9 @@
 	"content_scripts": [
 		{
 			"js": ["content.js"],
-			"matches": ["https://*.instructure.com/*"]
+			"matches": ["https://*.instructure.com", 
+			 			"https://canvas.*.edu",
+						"https://bcourses.berkeley.edu/*"]
 		}
 	],
 	"background": {
