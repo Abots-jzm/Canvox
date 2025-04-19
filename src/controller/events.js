@@ -63,6 +63,9 @@ function setupListeners(recognitionState) {
 	chrome.storage.onChanged.addListener(async (changes) => {
 		if (changes.microphoneActive && changes.microphoneActive.newValue !== recognitionState.isRecognizing) {
 			if (changes.microphoneActive.newValue === true && !recognitionState.isRecognizing) {
+				// Stop audio playback when turning microphone on
+				stopAudio();
+
 				if (!recognitionState.recognition) {
 					const deviceId = await getSettingWithDefault("audioInput", DEFAULT_SETTINGS.audioInput);
 					initRecognition(recognitionState, deviceId);
