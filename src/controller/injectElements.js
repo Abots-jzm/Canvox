@@ -112,11 +112,39 @@ function getAudioElement() {
 
 // Function to play audio
 async function playAudio(audioUrl, volume) {
-	const audioElement = getAudioElement();
-	audioElement.volume = volume;
-	audioElement.src = audioUrl;
-	await audioElement.play();
-	return audioElement;
+	try {
+		// First check if microphone is active
+		const micStatus = await new Promise(resolve => {
+			chrome.storage.sync.get("microphoneActive", (data) => {
+				resolve(data.microphoneActive || false);
+			});
+		});
+		
+		// Don't play audio if microphone is active
+		if (micStatus) {
+			console.log("Audio playback prevented: Microphone is active");
+			return null;
+		}
+		
+		const audioElement = getAudioElement();
+		audioElement.volume = volume;
+		audioElement.src = audioUrl;
+		await audioElement.play();
+		return audioElement;
+	} catch (error) {
+		console.error("Error playing audio:", error);
+		return null;
+	}
 }
 
-export { injectElements, toggleTranscript, getAudioElement, playAudio };
+// Function to stop audio if playing
+function stopAudio() {
+	if (globalAudioElement && !globalAudioElement.paused) {
+		globalAudioElement.pause();
+		globalAudioElement.currentTime = 0;
+		return true;
+	}
+	return false;
+}
+
+export { injectElements, toggleTranscript, getAudioElement, playAudio, stopAudio };

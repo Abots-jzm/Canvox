@@ -1,7 +1,7 @@
 import { initRecognition } from "../model/recognition.js";
 import { toggleMicrophone, getSettingWithDefault, DEFAULT_SETTINGS, isHotkeyMatch } from "../model/settings.js";
 import { giveNavigationFeedback } from "../model/tts.js";
-import { toggleTranscript } from "./injectElements.js";
+import { toggleTranscript, stopAudio } from "./injectElements.js";
 import { routeActions } from "./router.js";
 
 function setupListeners(recognitionState) {
@@ -13,6 +13,10 @@ function setupListeners(recognitionState) {
 		// Microphone hotkey
 		const hotkey = await getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone);
 		if (isHotkeyMatch(e, hotkey)) {
+			// Stop audio if microphone is activated
+			if (!recognitionState.isRecognizing) {
+				stopAudio();
+			}
 			toggleMicrophone(recognitionState);
 			e.preventDefault(); // Prevent browser's default handling of this key
 		}
