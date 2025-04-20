@@ -137,7 +137,7 @@ function checkAndAssignMessages() {
             const filterMatch = currentUrl.match(/filter=type=([^&]*)/);
             const filterType = filterMatch ? filterMatch[1] : 'inbox';
             console.log(`Current filter: ${filterType}`);
-        }, 500);
+        }, 2000);
     }
 }
 

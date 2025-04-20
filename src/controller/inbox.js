@@ -1,7 +1,7 @@
 // Global variables to store message elements
-let allMessages = [];
-let unreadMessage = [];
-let starredMessage = [];
+let allMessages = null;
+let unreadMessage = null;
+let starredMessage = null;
 
 // Arrays to store message data
 let messageObjects = [];
@@ -11,7 +11,7 @@ let messageObjects = [];
  */
 function assignMessages() {
     // Get all messages with class css-138gh4t-view
-    allMessages = document.querySelectorAll('.css-138gh4t-view');
+    allMessages = document.querySelectorAll('[data-testid="conversationListItem-Item"]');
     
     // Get all unread messages by finding elements with data-testid="unread-badge"
     unreadMessage = document.querySelectorAll('[data-testid="unread-badge"]');
@@ -20,7 +20,7 @@ function assignMessages() {
     starredMessage = document.querySelectorAll('[data-testid="visible-starred"]');
 
     // Assign data for each message object
-    messageObjects = allMessages.map(message => {
+    messageObjects = Array.from(allMessages).map(message => {
         // Extract date
         const dateElement = message.querySelector('.css-1bw2jwe-text');
         const date = dateElement ? dateElement.textContent : '';
@@ -46,9 +46,24 @@ function assignMessages() {
     });
 
     console.log('Total messages:', allMessages.length);
-    console.log('Unread messages:', unreadMessages.length);
+    console.log('Unread messages:', unreadMessage.length);
+    console.log('Starred messages:', starredMessage.length);
+    console.log('Message objects:', messageObjects);
+
+    // Log detailed information about the first message if available
+    if (messageObjects.length > 0) {
+        const firstMessage = messageObjects[0];
+        console.log('First message details:', {
+            date: firstMessage.date,
+            names: firstMessage.names,
+            isUnread: firstMessage.isUnread,
+            isStarred: firstMessage.isStarred
+        });
+    } else {
+        console.log('No messages found to display details');
+    }
+    
     console.log('Message objects:', messageObjects);
 }
 
-// Export the function and necessary variables
-export { assignMessages, allMessages, unreadMessage, starredMessage, messageDates, messageNames };
+export { assignMessages };
