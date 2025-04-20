@@ -28,6 +28,10 @@ function assignMessages() {
         // Extract names
         const nameElement = message.querySelector('.css-c31sii-text');
         const names = nameElement ? nameElement.textContent : '';
+
+        // Extract header
+        const headerElement = message.querySelector('.css-cv5a3j-view-heading');
+        const header = headerElement ? headerElement.textContent : '';
         
         // Check if message is unread
         const isUnread = !!message.querySelector('[data-testid="unread-badge"]');
@@ -40,6 +44,7 @@ function assignMessages() {
             element: message,
             date: date,
             names: names,
+            header: header,
             isUnread: isUnread,
             isStarred: isStarred
         };
@@ -56,6 +61,7 @@ function assignMessages() {
         console.log('First message details:', {
             date: firstMessage.date,
             names: firstMessage.names,
+            header: firstMessage.header,
             isUnread: firstMessage.isUnread,
             isStarred: firstMessage.isStarred
         });
