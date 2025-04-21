@@ -6,9 +6,7 @@ let starredMessage = null;
 // Arrays to store message data
 let messageObjects = [];
 
-/**
- * Assigns message elements to their respective variables and extracts message data
- */
+// Assigns message elements to their respective variables and extracts message data
 function assignMessages() {
     // Get all messages with class css-138gh4t-view
     allMessages = document.querySelectorAll('[data-testid="conversationListItem-Item"]');
@@ -73,3 +71,4 @@ function assignMessages() {
 }
 
 export { assignMessages };
+

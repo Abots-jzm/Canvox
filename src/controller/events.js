@@ -4,8 +4,12 @@ import { giveNavigationFeedback } from "../model/tts.js";
 import { toggleTranscript, stopAudio } from "./injectElements.js";
 import { routeActions } from "./router.js";
 import { assignMessages } from "./inbox.js";
+import { runAnnouncements } from "../model/announcementUpdate.js";
 
 function setupListeners(recognitionState) {
+
+	runAnnouncements();
+
 	// Navigation event listener
 	window.addEventListener("popstate", giveNavigationFeedback);
 
