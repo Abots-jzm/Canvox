@@ -103,15 +103,15 @@ function checkNewInboxMessages() {
 // function to run the functions based on the current page
 function runAnnouncements(){
   if (window.location.pathname.includes('/announcements')) {
-		setTimeout(checkNewAnnouncements, 1500);
+		setTimeout(checkNewAnnouncements, 2500);
 	  }
 	  
 	if (window.location.pathname.includes('/modules')) {
-		setTimeout(checkNewModuleItems, 1500);
+		setTimeout(checkNewModuleItems, 2500);
 	}
 	
 	if (window.location.pathname.includes('/conversations')) {
-		setTimeout(checkNewInboxMessages, 1500);
+		setTimeout(checkNewInboxMessages, 2500);
   }
 }
   
