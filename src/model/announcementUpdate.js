@@ -100,7 +100,7 @@ function checkNewInboxMessages() {
   });
 }
 
-
+// function to run the functions based on the current page
 function runAnnouncements(){
   if (window.location.pathname.includes('/announcements')) {
 		setTimeout(checkNewAnnouncements, 1500);
