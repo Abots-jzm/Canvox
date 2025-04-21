@@ -3,8 +3,12 @@ import { toggleMicrophone, getSettingWithDefault, DEFAULT_SETTINGS, isHotkeyMatc
 import { giveNavigationFeedback } from "../model/tts.js";
 import { toggleTranscript } from "./injectElements.js";
 import { routeActions } from "./router.js";
+import { runAnnouncements } from "../model/announcementUpdate.js";
 
 function setupListeners(recognitionState) {
+
+	runAnnouncements();
+
 	// Navigation event listener
 	window.addEventListener("popstate", giveNavigationFeedback);
 
