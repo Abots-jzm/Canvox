@@ -1,4 +1,4 @@
-import { textToSpeech } from "./tts";
+import { textToSpeech } from "./tts.js";
 
 function checkNewAnnouncements(recognitionState) {
 	// 1. will Create unique storage key for each page
