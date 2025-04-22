@@ -162,4 +162,3 @@ async function textToSpeech(narrateContent, recognitionState) {
 }
 
 export { giveNavigationFeedback, narratePage, textToSpeech };
-

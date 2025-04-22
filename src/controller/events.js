@@ -145,4 +145,3 @@ function checkAndAssignMessages() {
 }
 
 export { setupListeners };
-

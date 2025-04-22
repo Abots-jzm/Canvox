@@ -181,4 +181,3 @@ function readMessageContent(recognitionState, attempt = 1) {
 }
 
 export { assignMessages, clickMessage, messageObjects, wasAnInboxAction };
-
