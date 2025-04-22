@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
 
 	// Microphone state
 	microphoneActive: false,
+	preserveMic: true,
 
 	// Transcript visibility
 	transcriptVisible: true,

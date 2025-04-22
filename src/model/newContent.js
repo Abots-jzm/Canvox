@@ -1,4 +1,6 @@
-function checkNewAnnouncements() {
+import { textToSpeech } from "./tts";
+
+function checkNewAnnouncements(recognitionState) {
 	// 1. will Create unique storage key for each page
 	const pageKey = `canvas-h3-${window.location.pathname}`;
 
@@ -20,7 +22,8 @@ function checkNewAnnouncements() {
 
 		// 5. Notify if new content is found
 		if (newH3s.length > 0) {
-			console.log("New announcements detected:", newH3s);
+			// console.log("New announcements detected:", newH3s);
+			textToSpeech(`You have ${newH3s.length} new announcements.`, recognitionState);
 		} else {
 			console.log("No new announcements found.");
 		}
@@ -32,7 +35,7 @@ function checkNewAnnouncements() {
 	});
 }
 
-function checkNewModuleItems() {
+function checkNewModuleItems(recognitionState) {
 	// 1. Create a unique storage key for this course's modules page
 	const pageKey = `canvas-modules-${window.location.pathname}`;
 
@@ -53,7 +56,8 @@ function checkNewModuleItems() {
 
 		// 5. will Notify if new items are found
 		if (newModuleTitles.length > 0) {
-			console.log("New module items detected:", newModuleTitles);
+			// console.log("New module items detected:", newModuleTitles);
+			textToSpeech(`You have ${newModuleTitles.length} new module items.`, recognitionState);
 		} else {
 			console.log("No new module items found.");
 		}
@@ -65,52 +69,14 @@ function checkNewModuleItems() {
 	});
 }
 
-function checkNewInboxMessages() {
-	// 1. Create a unique storage key for the inbox page
-	const pageKey = `canvas-inbox-${window.location.pathname}`;
-
-	// 2. Select all span elements on the page with class "css-1ugbsk7-text" and extract their text
-	const currentInboxTitles = Array.from(document.querySelectorAll("span.css-1ugbsk7-text"))
-		.map((span) => span.textContent.trim())
-		.filter((text) => text); // Filter out any empty strings
-
-	console.log(`[checkNewInboxMessages] Current inbox message titles found:`, currentInboxTitles);
-
-	// 3. Get previously stored inbox titles
-	chrome.storage.local.get([pageKey], (result) => {
-		const previousInboxTitles = result[pageKey] || [];
-
-		console.log(`[checkNewInboxMessages] Previously stored inbox message titles:`, previousInboxTitles);
-
-		// 4. this willl identify new inbox messages
-		const newInboxTitles = currentInboxTitles.filter((title) => !previousInboxTitles.includes(title));
-
-		// 5. will Notify if new message are found
-		if (newInboxTitles.length > 0) {
-			console.log("New messages detected:", newInboxTitles);
-		} else {
-			console.log("No new  messages found.");
-		}
-
-		// 6. Save current titles for the next comparisons
-		chrome.storage.local.set({ [pageKey]: currentInboxTitles }, () => {
-			console.log(`[checkNewInboxMessages] Storage updated for ${pageKey}`);
-		});
-	});
-}
-
 // function to run the functions based on the current page
-function runAnnouncements() {
+function runAnnouncements(recognitionState) {
 	if (window.location.pathname.includes("/announcements")) {
-		setTimeout(checkNewAnnouncements, 2500);
+		setTimeout(() => checkNewAnnouncements(recognitionState), 2500);
 	}
 
 	if (window.location.pathname.includes("/modules")) {
-		setTimeout(checkNewModuleItems, 2500);
-	}
-
-	if (window.location.pathname.includes("/conversations")) {
-		setTimeout(checkNewInboxMessages, 2500);
+		setTimeout(() => checkNewModuleItems(recognitionState), 2500);
 	}
 }
 

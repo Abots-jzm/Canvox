@@ -1,7 +1,7 @@
-import { getAudioElement, playAudio } from "../controller/injectElements.js";
+import { playAudio } from "../controller/injectElements.js";
 
 // Check for navigation confirmation messages
-async function giveNavigationFeedback() {
+async function giveNavigationFeedback(recognitionState) {
 	try {
 		const navigationData = sessionStorage.getItem("canvoxNavigation");
 		if (navigationData) {
@@ -34,7 +34,7 @@ async function giveNavigationFeedback() {
 						const audioUrl = URL.createObjectURL(audioBlob);
 
 						// Use the shared audio element to play
-						const audioElement = await playAudio(audioUrl, volume);
+						const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
 						// Dispatch a custom event specifically for navigation feedback
 						const navEvent = new CustomEvent("navigation-feedback", {
@@ -56,7 +56,7 @@ async function giveNavigationFeedback() {
 }
 
 // Add this new function below collectMainContent
-async function narratePage(transcript = "") {
+async function narratePage(transcript = "", recognitionState) {
 	try {
 		console.log("Preparing page narration with content summary...");
 
@@ -101,7 +101,7 @@ async function narratePage(transcript = "") {
 		const audioUrl = URL.createObjectURL(audioBlob);
 
 		// Use the shared audio element to play
-		const audioElement = await playAudio(audioUrl, volume);
+		const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
 		// Dispatch a custom event that content.js will listen for
 		const narrateEvent = new CustomEvent("narrate-ready", { detail: { audioElement } });
@@ -123,7 +123,7 @@ function collectMainContent() {
 	return "";
 }
 
-async function textToSpeech(narrateContent) {
+async function textToSpeech(narrateContent, recognitionState) {
 	try {
 		console.log("Calling API (TTS)...");
 
@@ -151,7 +151,7 @@ async function textToSpeech(narrateContent) {
 		const audioUrl = URL.createObjectURL(audioBlob);
 
 		// Use the shared audio element to play
-		const audioElement = await playAudio(audioUrl, volume);
+		const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
 		// Dispatch a custom event that content.js will listen for
 		const ttsEvent = new CustomEvent("tts-ready", { detail: { audioElement } });

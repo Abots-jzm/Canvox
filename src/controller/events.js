@@ -1,16 +1,16 @@
+import { runAnnouncements } from "../model/newContent.js";
 import { initRecognition } from "../model/recognition.js";
-import { toggleMicrophone, getSettingWithDefault, DEFAULT_SETTINGS, isHotkeyMatch } from "../model/settings.js";
+import { DEFAULT_SETTINGS, getSettingWithDefault, isHotkeyMatch, toggleMicrophone } from "../model/settings.js";
 import { giveNavigationFeedback } from "../model/tts.js";
-import { toggleTranscript, stopAudio } from "./injectElements.js";
-import { routeActions } from "./router.js";
 import { assignMessages } from "./inbox.js";
-import { runAnnouncements } from "../model/announcementUpdate.js";
+import { stopAudio, toggleTranscript } from "./injectElements.js";
+import { routeActions } from "./router.js";
 
 function setupListeners(recognitionState) {
-	runAnnouncements();
+	runAnnouncements(recognitionState);
 
 	// Navigation event listener
-	window.addEventListener("popstate", giveNavigationFeedback);
+	window.addEventListener("popstate", () => giveNavigationFeedback(recognitionState));
 
 	// Inbox message assignment when DOM is loaded
 	checkAndAssignMessages();
@@ -129,7 +129,7 @@ function checkAndAssignMessages() {
 	const currentUrl = window.location.href;
 
 	// Check if URL matches Canvas conversations pattern
-	if (currentUrl.includes("instructure.com/conversations#filter=type=")) {
+	if (currentUrl.includes("conversations#filter=type=")) {
 		console.log("Canvas conversation page detected, assigning messages...");
 
 		// Sometimes the DOM might not be fully loaded with messages yet, so add a slight delay

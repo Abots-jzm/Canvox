@@ -4,16 +4,19 @@ import { extensionActionRouter } from "../model/settings.js";
 import { sidebarActionsRouter } from "../model/sidebar.js";
 import { wasATextAction } from "../model/text.js";
 import { narratePage } from "../model/tts.js";
+import { wasAnInboxAction } from "./inbox.js";
 
 function routeActions(transcript, recognitionState) {
 	//check for text actions first
 	if (wasATextAction(transcript)) return;
 
+	if (wasAnInboxAction(transcript, recognitionState)) return;
+
 	const destination = extractDestination(transcript);
 
 	// Handles narration requests
 	if (destination === "narrate") {
-		narratePage(transcript);
+		narratePage(transcript, recognitionState);
 		return;
 	}
 
