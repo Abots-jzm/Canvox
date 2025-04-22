@@ -1,10 +1,10 @@
-import { initRecognition } from "../model/recognition.js";
-import { toggleMicrophone, getSettingWithDefault, DEFAULT_SETTINGS, isHotkeyMatch } from "../model/settings.js";
-import { giveNavigationFeedback } from "../model/tts.js";
-import { toggleTranscript, stopAudio } from "./injectElements.js";
-import { routeActions } from "./router.js";
-import { assignMessages } from "./inbox.js";
 import { runAnnouncements } from "../model/newContent.js";
+import { initRecognition } from "../model/recognition.js";
+import { DEFAULT_SETTINGS, getSettingWithDefault, isHotkeyMatch, toggleMicrophone } from "../model/settings.js";
+import { giveNavigationFeedback } from "../model/tts.js";
+import { assignMessages } from "./inbox.js";
+import { stopAudio, toggleTranscript } from "./injectElements.js";
+import { routeActions } from "./router.js";
 
 function setupListeners(recognitionState) {
 	runAnnouncements(recognitionState);
@@ -145,3 +145,4 @@ function checkAndAssignMessages() {
 }
 
 export { setupListeners };
+

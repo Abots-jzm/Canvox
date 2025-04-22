@@ -31,7 +31,7 @@ function routeActions(transcript, recognitionState) {
 				JSON.stringify({
 					message: `Opened ${destination}`,
 					timestamp: Date.now(),
-				})
+				}),
 			);
 			return;
 		}
@@ -97,8 +97,8 @@ function extractDestination(transcript) {
 			match[match.length - 1] === "mute"
 				? "volume mute"
 				: match[match.length - 1] === "up"
-				? "volume up"
-				: "volume down";
+					? "volume up"
+					: "volume down";
 	} else if ((match = setVolume.exec(transcript))) {
 		destination = `volume ${match[match.length - 1]}`;
 	} else if ((match = toggleTranscript.exec(transcript))) {

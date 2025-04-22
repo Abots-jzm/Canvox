@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				() => {
 					console.log(`Hotkey for ${storageKey} set to:`, inputField.value);
 					inputField.blur(); // Remove focus
-				}
+				},
 			);
 		});
 

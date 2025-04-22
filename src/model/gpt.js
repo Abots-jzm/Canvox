@@ -52,7 +52,7 @@ async function useGPT(transcript, recognitionState) {
 					voice_input: transcript,
 					possible_destinations: possibleDestinations,
 				}),
-			}
+			},
 		);
 		const data = await response.json();
 		if (data && data.response) {
@@ -79,7 +79,7 @@ async function useGPT(transcript, recognitionState) {
 						JSON.stringify({
 							message: `Opened ${destination}`,
 							timestamp: Date.now(),
-						})
+						}),
 					);
 					return;
 				}

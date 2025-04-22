@@ -180,4 +180,5 @@ function readMessageContent(recognitionState, attempt = 1) {
 	textToSpeech(formattedMessage, recognitionState);
 }
 
-export { assignMessages, wasAnInboxAction, messageObjects, clickMessage };
+export { assignMessages, clickMessage, messageObjects, wasAnInboxAction };
+

@@ -1,4 +1,4 @@
-import { getAudioElement, playAudio } from "../controller/injectElements.js";
+import { playAudio } from "../controller/injectElements.js";
 
 // Check for navigation confirmation messages
 async function giveNavigationFeedback(recognitionState) {
@@ -89,7 +89,7 @@ async function narratePage(transcript = "", recognitionState) {
 					user_transcript: transcript,
 					summarize: true,
 				}),
-			}
+			},
 		);
 
 		if (!response.ok) {
@@ -139,7 +139,7 @@ async function textToSpeech(narrateContent, recognitionState) {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ narrate_Content: narrateContent }),
-			}
+			},
 		);
 
 		if (!response.ok) {
@@ -162,3 +162,4 @@ async function textToSpeech(narrateContent, recognitionState) {
 }
 
 export { giveNavigationFeedback, narratePage, textToSpeech };
+
