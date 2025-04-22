@@ -138,13 +138,13 @@ function readMessageContent(recognitionState, attempt = 1) {
 	// After all attempts or if title is found, continue with the function
 	const finalMessageTitle = messageTitle || "No title found";
 
-	// Correctly select span with letter-spacing attribute set to none and class css-bvhjjg-text
-	const messageAuthor = messageContainer?.querySelector("span.css-bvhjjg-text")?.textContent || "No author";
+	const messageAuthor = messageContainer?.querySelector("span.css-g5lcut-text")?.textContent || "No author";
 
-	const bodyElement = messageContainer?.querySelector("span.css-1bd69up-text[letter-spacing='normal']");
+	const bodyElement = messageContainer?.querySelector("span.css-hszq8y-text");
+	console.log(bodyElement);
 
-	// If title is null and we haven't reached max attempts, retry after delay
-	if (!bodyElement && attempt < maxAttempts) {
+	// If no body and we haven't reached max attempts, retry after delay
+	if ((!bodyElement || messageAuthor == "No author") && attempt < maxAttempts) {
 		console.log(`Attempt ${attempt}/${maxAttempts}: Message content not fully loaded, retrying in 2 seconds...`);
 		return setTimeout(() => readMessageContent(recognitionState, attempt + 1), 2000);
 	}
