@@ -1,3 +1,5 @@
+import { textToSpeech } from "../model/tts.js";
+
 // Global variables to store message elements
 let allMessages = null;
 let unreadMessage = null;
@@ -71,21 +73,21 @@ function assignMessages() {
 	console.log("Message objects:", messageObjects);
 }
 
-function wasAnInboxAction(transcript) {
+function wasAnInboxAction(transcript, recognitionState) {
 	if (!window.location.href.includes("conversations")) return false;
 
 	const lastMessagePattern =
 		/\b(show|see|view|get|check|read|display|open|access)\b.+\b(last|latest|recent|newest)\b.+\b(message|msg|email|mail|conversation|inbox item)\b$/i;
 
 	if (lastMessagePattern.test(transcript)) {
-		clickLastMessage();
+		clickLastMessage(recognitionState);
 		return true;
 	}
 
 	return false;
 }
 
-function clickLastMessage() {
+function clickLastMessage(recognitionState) {
 	if (!lastMessage) {
 		console.warn("No last message found to click.");
 		return;
@@ -93,9 +95,10 @@ function clickLastMessage() {
 
 	// console.log(`Clicking last message: ${lastMessage.header}`);
 	lastMessage.element.click();
+	setTimeout(() => readMessageContent(recognitionState), 2000); // Wait for the message content to load
 }
 
-function clickMessage(input) {
+function clickMessage(input, recognitionState) {
 	if (!allMessages || allMessages.length === 0) {
 		console.warn("No messages found to click.");
 		return;
@@ -103,7 +106,7 @@ function clickMessage(input) {
 
 	// Extract the title Y from format "message X: Y names: ..."
 	let title = input;
-	const match = input.match(/message\s+\d+:\s+(.*?)\s+names:/i);
+	const match = title.match(/message\s+\d+:\s+(.*?)\s+names:/i);
 	if (match && match[1]) {
 		title = match[1].trim();
 	}
@@ -112,9 +115,9 @@ function clickMessage(input) {
 	let found = false;
 	messageObjects.forEach((message) => {
 		if (message.header.toLowerCase().includes(title.toLowerCase())) {
-			console.log(`Clicking message with title: ${title}`);
 			message.element.click();
 			found = true;
+			setTimeout(() => readMessageContent(recognitionState), 1000); // Wait for the message content to load
 			return;
 		}
 	});
@@ -122,6 +125,59 @@ function clickMessage(input) {
 	if (!found) {
 		console.warn(`No message found with title: ${title}`);
 	}
+}
+
+function readMessageContent(recognitionState, attempt = 1) {
+	const maxAttempts = 3;
+
+	const messageContainer = document.querySelector(".css-103zv00-view-flexItem");
+
+	const messageTitleElement = messageContainer?.querySelector('[data-testid="message-detail-header-desktop"]');
+	const messageTitle = messageTitleElement?.textContent || null;
+
+	// After all attempts or if title is found, continue with the function
+	const finalMessageTitle = messageTitle || "No title found";
+
+	// Correctly select span with letter-spacing attribute set to none and class css-bvhjjg-text
+	const messageAuthor = messageContainer?.querySelector("span.css-bvhjjg-text")?.textContent || "No author";
+
+	const bodyElement = messageContainer?.querySelector("span.css-1bd69up-text[letter-spacing='normal']");
+
+	// If title is null and we haven't reached max attempts, retry after delay
+	if (!bodyElement && attempt < maxAttempts) {
+		console.log(`Attempt ${attempt}/${maxAttempts}: Message content not fully loaded, retrying in 2 seconds...`);
+		return setTimeout(() => readMessageContent(recognitionState, attempt + 1), 2000);
+	}
+
+	// Extract message body content, handling line breaks and anchors
+	let messageBody = "";
+	if (bodyElement) {
+		// Process all child nodes to handle text and anchors
+		const processNode = (node) => {
+			if (node.nodeType === Node.TEXT_NODE) {
+				messageBody += node.textContent;
+			} else if (node.nodeType === Node.ELEMENT_NODE) {
+				if (node.tagName === "A") {
+					// Include the href for anchor elements
+					messageBody += `${node.textContent} (${node.href}) `;
+				} else if (node.tagName === "BR") {
+					messageBody += "\n";
+				} else {
+					// Recursively process other elements
+					Array.from(node.childNodes).forEach(processNode);
+				}
+			}
+		};
+
+		Array.from(bodyElement.childNodes).forEach(processNode);
+		messageBody = messageBody.trim();
+	} else {
+		messageBody = "No message content found";
+	}
+
+	const formattedMessage = `Message from ${messageAuthor}. Subject: ${finalMessageTitle}. Message body: ${messageBody}`;
+
+	textToSpeech(formattedMessage, recognitionState);
 }
 
 export { assignMessages, wasAnInboxAction, messageObjects, clickMessage };

@@ -116,7 +116,7 @@ function getAudioElement() {
 async function playAudio(audioUrl, volume, recognitionState) {
 	try {
 		// If microphone is active, toggle it off before playing audio
-		if (recognitionState.isRecognizing) {
+		if (recognitionState && recognitionState.isRecognizing) {
 			await toggleMicrophone(recognitionState);
 		}
 

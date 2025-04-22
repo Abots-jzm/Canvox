@@ -67,7 +67,7 @@ async function useGPT(transcript, recognitionState) {
 			if (destination === "narrate") {
 				textToSpeech("Calling text to speech from use GPT.", recognitionState);
 			} else if (destination.includes("message")) {
-				clickMessage(destination);
+				clickMessage(destination, recognitionState);
 			} else {
 				// After getting the destination, trigger navigation
 				const wasASidebarAction = sidebarActionsRouter(destination);

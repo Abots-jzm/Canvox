@@ -56,7 +56,7 @@ async function giveNavigationFeedback(recognitionState) {
 }
 
 // Add this new function below collectMainContent
-async function narratePage(transcript = "", recognitionState = null) {
+async function narratePage(transcript = "", recognitionState) {
 	try {
 		console.log("Preparing page narration with content summary...");
 
