@@ -24,6 +24,13 @@ jobs:
       - name: Install Prettier
         run: npm install prettier --save-dev
 
-      - name: Check Formatting with Prettier
-        run: npx prettier --check .
-        # This checks if files match Prettier's formatting rules based on your config.
+      # Removed the --check step
+      - name: Format code with Prettier
+        run: npx prettier --write .
+        # This formats files according to Prettier's rules based on your config.
+
+      - name: Commit changes # Add this step
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: Auto-format code with Prettier"
+          branch: ${{ github.head_ref || github.ref_name }} # Commit to the current branch
