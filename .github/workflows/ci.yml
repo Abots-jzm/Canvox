@@ -1,4 +1,4 @@
-name: CI
+name: Format Check with Prettier
 
 on:
   push:
@@ -10,21 +10,24 @@ jobs:
   format_check:
     name: Format Check
     runs-on: ubuntu-latest
+    # Add write permissions for the contents
+    permissions:
+      contents: write # Add this line
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        # fetch-depth: 0 # Uncomment if needed, especially for PRs from forks
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20" # Use a recent LTS version of Node.js
 
-      # Install only Prettier
+      # Install Prettier
       - name: Install Prettier
         run: npm install prettier --save-dev
 
-      # Removed the --check step
       - name: Format code with Prettier
         run: npx prettier --write .
         # This formats files according to Prettier's rules based on your config.
