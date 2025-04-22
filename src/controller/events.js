@@ -7,7 +7,7 @@ import { assignMessages } from "./inbox.js";
 import { runAnnouncements } from "../model/newContent.js";
 
 function setupListeners(recognitionState) {
-	runAnnouncements();
+	runAnnouncements(recognitionState);
 
 	// Navigation event listener
 	window.addEventListener("popstate", () => giveNavigationFeedback(recognitionState));

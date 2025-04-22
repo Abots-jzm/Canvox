@@ -1,4 +1,6 @@
-function checkNewAnnouncements() {
+import { textToSpeech } from "./tts";
+
+function checkNewAnnouncements(recognitionState) {
 	// 1. will Create unique storage key for each page
 	const pageKey = `canvas-h3-${window.location.pathname}`;
 
@@ -20,7 +22,8 @@ function checkNewAnnouncements() {
 
 		// 5. Notify if new content is found
 		if (newH3s.length > 0) {
-			console.log("New announcements detected:", newH3s);
+			// console.log("New announcements detected:", newH3s);
+			textToSpeech(`You have ${newH3s.length} new announcements.`, recognitionState);
 		} else {
 			console.log("No new announcements found.");
 		}
@@ -32,7 +35,7 @@ function checkNewAnnouncements() {
 	});
 }
 
-function checkNewModuleItems() {
+function checkNewModuleItems(recognitionState) {
 	// 1. Create a unique storage key for this course's modules page
 	const pageKey = `canvas-modules-${window.location.pathname}`;
 
@@ -53,7 +56,8 @@ function checkNewModuleItems() {
 
 		// 5. will Notify if new items are found
 		if (newModuleTitles.length > 0) {
-			console.log("New module items detected:", newModuleTitles);
+			// console.log("New module items detected:", newModuleTitles);
+			textToSpeech(`You have ${newModuleTitles.length} new module items.`, recognitionState);
 		} else {
 			console.log("No new module items found.");
 		}
@@ -66,13 +70,13 @@ function checkNewModuleItems() {
 }
 
 // function to run the functions based on the current page
-function runAnnouncements() {
+function runAnnouncements(recognitionState) {
 	if (window.location.pathname.includes("/announcements")) {
-		setTimeout(checkNewAnnouncements, 2500);
+		setTimeout(() => checkNewAnnouncements(recognitionState), 2500);
 	}
 
 	if (window.location.pathname.includes("/modules")) {
-		setTimeout(checkNewModuleItems, 2500);
+		setTimeout(() => checkNewModuleItems(recognitionState), 2500);
 	}
 }
 
