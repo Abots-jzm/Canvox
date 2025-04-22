@@ -156,7 +156,7 @@ function readPossibleOptions() {
 
 		message = "You are in the " + terms[1] + " course. You can navigate to the following sections: " + terms.slice(2).join(", ") + ". All sidebar options are also available.";
 	}
-	else{
+	else if (currentURL.pathname == "/" || currentURL.pathname == "") {
 		for (let term of possibleDestinations) {
 			// Read each destination using text-to-speech
 			if (term.includes(".")){
@@ -175,6 +175,14 @@ function readPossibleOptions() {
 		}
 
 		message = "You can navigate to the following sections: " + options.join(", ") + ". You can also navigate to announcements, assignments, discussions, and files for all classes. You can navigate to these links: " + links.join(", ") + ", All sidebar options are also available.";
+	}
+
+	else {
+		for (var term of possibleDestinations) {
+			terms.push(term);
+		}
+
+		message = "You can navigate to the following sections: " + terms.join(", ") + ". All sidebar options are also available.";
 	}
 
 	textToSpeech(message);
