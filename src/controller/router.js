@@ -13,7 +13,7 @@ function routeActions(transcript, recognitionState) {
 
 	// Handles narration requests
 	if (destination === "narrate") {
-		narratePage(transcript);
+		narratePage(transcript, recognitionState);
 		return;
 	}
 
@@ -130,5 +130,3 @@ function extractDestination(transcript) {
 }
 
 export { routeActions };
-
-

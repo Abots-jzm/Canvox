@@ -1,7 +1,7 @@
-import { getAudioElement, playAudio } from '../controller/injectElements.js';
+import { getAudioElement, playAudio } from "../controller/injectElements.js";
 
 // Check for navigation confirmation messages
-async function giveNavigationFeedback() {
+async function giveNavigationFeedback(recognitionState) {
 	try {
 		const navigationData = sessionStorage.getItem("canvoxNavigation");
 		if (navigationData) {
@@ -11,7 +11,7 @@ async function giveNavigationFeedback() {
 			if (Date.now() - timestamp < 5000) {
 				// Small delay to ensure the page has loaded
 				setTimeout(async () => {
-						// Get the volume setting
+					// Get the volume setting
 					const data = await chrome.storage.sync.get("volume");
 					const volume = parseInt(data.volume) / 100;
 
@@ -33,8 +33,8 @@ async function giveNavigationFeedback() {
 						const audioBlob = await response.blob();
 						const audioUrl = URL.createObjectURL(audioBlob);
 
-							// Use the shared audio element to play
-						const audioElement = await playAudio(audioUrl, volume);
+						// Use the shared audio element to play
+						const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
 						// Dispatch a custom event specifically for navigation feedback
 						const navEvent = new CustomEvent("navigation-feedback", {
@@ -56,7 +56,7 @@ async function giveNavigationFeedback() {
 }
 
 // Add this new function below collectMainContent
-async function narratePage(transcript = "") {
+async function narratePage(transcript = "", recognitionState = null) {
 	try {
 		console.log("Preparing page narration with content summary...");
 
@@ -72,7 +72,7 @@ async function narratePage(transcript = "") {
 		// Create a summary prompt
 		const narrateText = `Page title: ${pageTitle}. Content: ${pageContent}`;
 
-			// Get the volume setting
+		// Get the volume setting
 		const data = await chrome.storage.sync.get("volume");
 		const volume = parseInt(data.volume) / 100;
 
@@ -100,8 +100,8 @@ async function narratePage(transcript = "") {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
-			// Use the shared audio element to play
-		const audioElement = await playAudio(audioUrl, volume);
+		// Use the shared audio element to play
+		const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
 		// Dispatch a custom event that content.js will listen for
 		const narrateEvent = new CustomEvent("narrate-ready", { detail: { audioElement } });
@@ -123,11 +123,11 @@ function collectMainContent() {
 	return "";
 }
 
-async function textToSpeech(narrateContent) {
+async function textToSpeech(narrateContent, recognitionState) {
 	try {
 		console.log("Calling API (TTS)...");
 
-			// Get the volume setting
+		// Get the volume setting
 		const data = await chrome.storage.sync.get("volume");
 		const volume = parseInt(data.volume) / 100;
 
@@ -150,8 +150,8 @@ async function textToSpeech(narrateContent) {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
-			// Use the shared audio element to play
-		const audioElement = await playAudio(audioUrl, volume);
+		// Use the shared audio element to play
+		const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
 		// Dispatch a custom event that content.js will listen for
 		const ttsEvent = new CustomEvent("tts-ready", { detail: { audioElement } });

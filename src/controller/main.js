@@ -26,7 +26,7 @@ export async function main() {
 	};
 
 	setupListeners(recognitionState);
-	giveNavigationFeedback();
+	giveNavigationFeedback(recognitionState);
 
 	// Persist microphone settings accross page navigation
 	const [isActive, deviceId] = await Promise.all([

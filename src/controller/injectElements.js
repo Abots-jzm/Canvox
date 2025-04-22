@@ -1,3 +1,5 @@
+import { toggleMicrophone } from "../model/settings.js";
+
 let speechContainer;
 let globalAudioElement;
 
@@ -111,21 +113,13 @@ function getAudioElement() {
 }
 
 // Function to play audio
-async function playAudio(audioUrl, volume) {
+async function playAudio(audioUrl, volume, recognitionState) {
 	try {
-		// First check if microphone is active
-		const micStatus = await new Promise(resolve => {
-			chrome.storage.sync.get("microphoneActive", (data) => {
-				resolve(data.microphoneActive || false);
-			});
-		});
-		
-		// Don't play audio if microphone is active
-		if (micStatus) {
-			console.log("Audio playback prevented: Microphone is active");
-			return null;
+		// If microphone is active, toggle it off before playing audio
+		if (recognitionState.isRecognizing) {
+			await toggleMicrophone(recognitionState);
 		}
-		
+
 		const audioElement = getAudioElement();
 		audioElement.volume = volume;
 		audioElement.src = audioUrl;
