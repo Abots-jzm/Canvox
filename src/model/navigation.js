@@ -15,7 +15,7 @@ function navigate(destination) {
 				JSON.stringify({
 					message: `Opened ${destination}`,
 					timestamp: Date.now(),
-				})
+				}),
 			);
 
 			// Then navigate
@@ -34,7 +34,7 @@ function navigate(destination) {
 					JSON.stringify({
 						message: `Opened ${destination}`,
 						timestamp: Date.now(),
-					})
+					}),
 				);
 
 				// Then navigate

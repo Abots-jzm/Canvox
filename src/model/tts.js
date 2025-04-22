@@ -89,7 +89,7 @@ async function narratePage(transcript = "") {
 					user_transcript: transcript,
 					summarize: true,
 				}),
-			}
+			},
 		);
 
 		if (!response.ok) {
@@ -139,7 +139,7 @@ async function textToSpeech(narrateContent) {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ narrate_Content: narrateContent }),
-			}
+			},
 		);
 
 		if (!response.ok) {

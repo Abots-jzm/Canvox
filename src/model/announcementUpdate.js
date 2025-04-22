@@ -4,7 +4,7 @@ function checkNewAnnouncements() {
 
 	// 2. Get all H3 elements with the class name and store their text content
 	const currentH3s = Array.from(document.querySelectorAll("h3.css-cv5a3j-view-heading")).map((h3) =>
-		h3.textContent.replace(/^unread,\s*/i, "").trim()
+		h3.textContent.replace(/^unread,\s*/i, "").trim(),
 	);
 
 	console.log(`[checkNewAnnouncements] Scanned current h3s on page:`, currentH3s);
