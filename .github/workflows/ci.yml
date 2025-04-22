@@ -22,8 +22,8 @@ jobs:
 
       # Install dependencies directly as no package.json was found
       # Consider adding a package.json (npm init -y) and managing deps there
-      - name: Install ESLint and Prettier
-        run: npm install eslint prettier --save-dev
+      - name: Install ESLint, Prettier, and Prettier config for ESLint
+        run: npm install eslint prettier eslint-config-prettier --save-dev
 
       - name: Run ESLint
         run: npx eslint ./**/*.js *.js
