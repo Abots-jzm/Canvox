@@ -7,20 +7,19 @@ import { assignMessages } from "./inbox.js";
 import { runAnnouncements } from "../model/announcementUpdate.js";
 
 function setupListeners(recognitionState) {
-
 	runAnnouncements();
 
 	// Navigation event listener
 	window.addEventListener("popstate", giveNavigationFeedback);
 
 	// Inbox message assignment when DOM is loaded
-    checkAndAssignMessages();
-    
-    // Listen for URL changes to detect when user navigates to inbox
-    window.addEventListener('popstate', checkAndAssignMessages);
-    
-    // Also check on hash change (for single-page applications)
-    window.addEventListener('hashchange', checkAndAssignMessages);
+	checkAndAssignMessages();
+
+	// Listen for URL changes to detect when user navigates to inbox
+	window.addEventListener("popstate", checkAndAssignMessages);
+
+	// Also check on hash change (for single-page applications)
+	window.addEventListener("hashchange", checkAndAssignMessages);
 
 	//Hotkeys event listener
 	document.addEventListener("keydown", async (e) => {
@@ -127,22 +126,22 @@ function setupListeners(recognitionState) {
 
 // Call assignMessages if the page is messages
 function checkAndAssignMessages() {
-    const currentUrl = window.location.href;
-    
-    // Check if URL matches Canvas conversations pattern
-    if (currentUrl.includes('instructure.com/conversations#filter=type=')) {
-        console.log('Canvas conversation page detected, assigning messages...');
-        
-        // Sometimes the DOM might not be fully loaded with messages yet, so add a slight delay
-        setTimeout(() => {
-            assignMessages();
-            
-            // Get the current filter type from the URL (inbox, unread, starred, archived, etc.)
-            const filterMatch = currentUrl.match(/filter=type=([^&]*)/);
-            const filterType = filterMatch ? filterMatch[1] : 'inbox';
-            console.log(`Current filter: ${filterType}`);
-        }, 2000);
-    }
+	const currentUrl = window.location.href;
+
+	// Check if URL matches Canvas conversations pattern
+	if (currentUrl.includes("instructure.com/conversations#filter=type=")) {
+		console.log("Canvas conversation page detected, assigning messages...");
+
+		// Sometimes the DOM might not be fully loaded with messages yet, so add a slight delay
+		setTimeout(() => {
+			assignMessages();
+
+			// Get the current filter type from the URL (inbox, unread, starred, archived, etc.)
+			const filterMatch = currentUrl.match(/filter=type=([^&]*)/);
+			const filterType = filterMatch ? filterMatch[1] : "inbox";
+			console.log(`Current filter: ${filterType}`);
+		}, 2000);
+	}
 }
 
 export { setupListeners };

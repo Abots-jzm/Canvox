@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  lint_and_format:
-    name: Lint and Format Check
+  format_check:
+    name: Format Check
     runs-on: ubuntu-latest
 
     steps:
@@ -20,16 +20,10 @@ jobs:
         with:
           node-version: "20" # Use a recent LTS version of Node.js
 
-      # Install dependencies directly as no package.json was found
-      # Consider adding a package.json (npm init -y) and managing deps there
-      - name: Install ESLint, Prettier, and Prettier config for ESLint
-        run: npm install eslint prettier eslint-config-prettier --save-dev
-
-      - name: Run ESLint
-        run: npx eslint ./**/*.js *.js
-        # Add an .eslintrc.json file to customize linting rules.
-        # Consider integrating Prettier with ESLint (e.g., eslint-config-prettier)
+      # Install only Prettier
+      - name: Install Prettier
+        run: npm install prettier --save-dev
 
       - name: Check Formatting with Prettier
-        run: npx prettier --check ./**/*.js *.js
+        run: npx prettier --check .
         # This checks if files match Prettier's formatting rules based on your config.

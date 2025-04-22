@@ -114,18 +114,18 @@ function getAudioElement() {
 async function playAudio(audioUrl, volume) {
 	try {
 		// First check if microphone is active
-		const micStatus = await new Promise(resolve => {
+		const micStatus = await new Promise((resolve) => {
 			chrome.storage.sync.get("microphoneActive", (data) => {
 				resolve(data.microphoneActive || false);
 			});
 		});
-		
+
 		// Don't play audio if microphone is active
 		if (micStatus) {
 			console.log("Audio playback prevented: Microphone is active");
 			return null;
 		}
-		
+
 		const audioElement = getAudioElement();
 		audioElement.volume = volume;
 		audioElement.src = audioUrl;

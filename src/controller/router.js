@@ -130,5 +130,3 @@ function extractDestination(transcript) {
 }
 
 export { routeActions };
-
-

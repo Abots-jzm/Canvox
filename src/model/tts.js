@@ -1,4 +1,4 @@
-import { getAudioElement, playAudio } from '../controller/injectElements.js';
+import { getAudioElement, playAudio } from "../controller/injectElements.js";
 
 // Check for navigation confirmation messages
 async function giveNavigationFeedback() {
@@ -11,7 +11,7 @@ async function giveNavigationFeedback() {
 			if (Date.now() - timestamp < 5000) {
 				// Small delay to ensure the page has loaded
 				setTimeout(async () => {
-						// Get the volume setting
+					// Get the volume setting
 					const data = await chrome.storage.sync.get("volume");
 					const volume = parseInt(data.volume) / 100;
 
@@ -33,7 +33,7 @@ async function giveNavigationFeedback() {
 						const audioBlob = await response.blob();
 						const audioUrl = URL.createObjectURL(audioBlob);
 
-							// Use the shared audio element to play
+						// Use the shared audio element to play
 						const audioElement = await playAudio(audioUrl, volume);
 
 						// Dispatch a custom event specifically for navigation feedback
@@ -72,7 +72,7 @@ async function narratePage(transcript = "") {
 		// Create a summary prompt
 		const narrateText = `Page title: ${pageTitle}. Content: ${pageContent}`;
 
-			// Get the volume setting
+		// Get the volume setting
 		const data = await chrome.storage.sync.get("volume");
 		const volume = parseInt(data.volume) / 100;
 
@@ -100,7 +100,7 @@ async function narratePage(transcript = "") {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
-			// Use the shared audio element to play
+		// Use the shared audio element to play
 		const audioElement = await playAudio(audioUrl, volume);
 
 		// Dispatch a custom event that content.js will listen for
@@ -127,7 +127,7 @@ async function textToSpeech(narrateContent) {
 	try {
 		console.log("Calling API (TTS)...");
 
-			// Get the volume setting
+		// Get the volume setting
 		const data = await chrome.storage.sync.get("volume");
 		const volume = parseInt(data.volume) / 100;
 
@@ -150,7 +150,7 @@ async function textToSpeech(narrateContent) {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
-			// Use the shared audio element to play
+		// Use the shared audio element to play
 		const audioElement = await playAudio(audioUrl, volume);
 
 		// Dispatch a custom event that content.js will listen for
