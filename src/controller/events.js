@@ -129,7 +129,7 @@ function checkAndAssignMessages() {
 	const currentUrl = window.location.href;
 
 	// Check if URL matches Canvas conversations pattern
-	if (currentUrl.includes("instructure.com/conversations#filter=type=")) {
+	if (currentUrl.includes("conversations#filter=type=")) {
 		console.log("Canvas conversation page detected, assigning messages...");
 
 		// Sometimes the DOM might not be fully loaded with messages yet, so add a slight delay

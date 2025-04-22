@@ -72,19 +72,56 @@ function assignMessages() {
 }
 
 function wasAnInboxAction(transcript) {
-	if (!window.location.href.includes("instructure.com/conversations#filter=type=")) return false;
+	if (!window.location.href.includes("conversations")) return false;
 
 	const lastMessagePattern =
-		/\b(show|see|view|get|check|read|display|open|access)\b.+\b(last|latest|recent|newest)\b.+\b(message|msg|email|mail|conversation|inbox item)\b/i;
+		/\b(show|see|view|get|check|read|display|open|access)\b.+\b(last|latest|recent|newest)\b.+\b(message|msg|email|mail|conversation|inbox item)\b$/i;
 
 	if (lastMessagePattern.test(transcript)) {
-		console.log("User wants to see their last message");
+		clickLastMessage();
 		return true;
 	}
 
-	return true;
+	return false;
 }
 
-// function clickMessage(params) {}
+function clickLastMessage() {
+	if (!lastMessage) {
+		console.warn("No last message found to click.");
+		return;
+	}
 
-export { assignMessages, wasAnInboxAction };
+	// console.log(`Clicking last message: ${lastMessage.header}`);
+	lastMessage.element.click();
+}
+
+function clickMessage(input) {
+	if (!allMessages || allMessages.length === 0) {
+		console.warn("No messages found to click.");
+		return;
+	}
+
+	// Extract the title Y from format "message X: Y names: ..."
+	let title = input;
+	const match = input.match(/message\s+\d+:\s+(.*?)\s+names:/i);
+	if (match && match[1]) {
+		title = match[1].trim();
+	}
+
+	// Find the message that matches the extracted title
+	let found = false;
+	messageObjects.forEach((message) => {
+		if (message.header.toLowerCase().includes(title.toLowerCase())) {
+			console.log(`Clicking message with title: ${title}`);
+			message.element.click();
+			found = true;
+			return;
+		}
+	});
+
+	if (!found) {
+		console.warn(`No message found with title: ${title}`);
+	}
+}
+
+export { assignMessages, wasAnInboxAction, messageObjects, clickMessage };
