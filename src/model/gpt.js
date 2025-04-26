@@ -1,4 +1,5 @@
 import { collectUniqueDestinations, navigate } from "./navigation.js";
+import { readPossibleOptions } from "./navigation.js";
 import { POSSIBLE_EXTENSION_ACTIONS } from "./settings.js";
 import { POSSIBLE_SIDEBAR_DESTINATIONS, sidebarActionsRouter } from "./sidebar.js";
 import { textToSpeech } from "./tts.js";
@@ -85,7 +86,13 @@ async function useGPT(transcript, recognitionState) {
 				}
 
 				const wasAnExtensionAction = extensionActionRouter(destination, recognitionState);
-				if (!wasASidebarAction && !wasAnExtensionAction) {
+
+				if (destination.match(/explain options/)){
+					// Handle "explain options" action
+					readPossibleOptions();
+					return;
+				}
+				else if (!wasASidebarAction && !wasAnExtensionAction) {
 					navigate(destination);
 				}
 			}
