@@ -128,61 +128,60 @@ function readPossibleOptions() {
 	var terms = [];
 	var options = [];
 
-	var links = [
-				'by instructure',
-				'privacy policy',
-				'cookie notice',
-				'acceptable use policy',
-				'facebook',
-				'x.com'
-			]
+	var links = ["by instructure", "privacy policy", "cookie notice", "acceptable use policy", "facebook", "x.com"];
 
-	if (currentURL.pathname.includes("courses")){
+	if (currentURL.pathname.includes("courses")) {
 		for (var term of possibleDestinations) {
 			// Read each destination using text-to-speech
 			if (term.includes(".")) {
 				// skip terms that include periods
 				continue;
-			}
-			else{
+			} else {
 				terms.push(term);
 			}
 		}
 
-		if (terms.length > 25){
+		if (terms.length > 25) {
 			// If there are too many terms, limit the number of terms to read
 			terms = terms.slice(0, 25);
 		}
 
-		message = "You are in the " + terms[1] + " course. You can navigate to the following sections: " + terms.slice(2).join(", ") + ". All sidebar options are also available.";
-	}
-	else if (currentURL.pathname == "/" || currentURL.pathname == "") {
+		message =
+			"You are in the " +
+			terms[1] +
+			" course. You can navigate to the following sections: " +
+			terms.slice(2).join(", ") +
+			". All sidebar options are also available.";
+	} else if (currentURL.pathname == "/" || currentURL.pathname == "") {
 		for (let term of possibleDestinations) {
 			// Read each destination using text-to-speech
-			if (term.includes(".")){
+			if (term.includes(".")) {
 				terms.push(term);
 			}
 		}
 
-		for (let term of terms){
-			innerloop:
-			for (let i = 0; i < term.length; i++){
-				if (term[i] == "."){
-					options.push(term.substring(0, i-9));
+		for (let term of terms) {
+			innerloop: for (let i = 0; i < term.length; i++) {
+				if (term[i] == ".") {
+					options.push(term.substring(0, i - 9));
 					break innerloop;
 				}
 			}
 		}
 
-		message = "You can navigate to the following sections: " + options.join(", ") + ". You can also navigate to announcements, assignments, discussions, and files for all classes. You can navigate to these links: " + links.join(", ") + ", All sidebar options are also available.";
-	}
-
-	else {
+		message =
+			"You can navigate to the following sections: " +
+			options.join(", ") +
+			". You can also navigate to announcements, assignments, discussions, and files for all classes. You can navigate to these links: " +
+			links.join(", ") +
+			", All sidebar options are also available.";
+	} else {
 		for (var term of possibleDestinations) {
 			terms.push(term);
 		}
 
-		message = "You can navigate to the following sections: " + terms.join(", ") + ". All sidebar options are also available.";
+		message =
+			"You can navigate to the following sections: " + terms.join(", ") + ". All sidebar options are also available.";
 	}
 
 	textToSpeech(message);

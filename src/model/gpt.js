@@ -86,7 +86,7 @@ async function useGPT(transcript, recognitionState) {
 
 				const wasAnExtensionAction = extensionActionRouter(destination, recognitionState);
 
-				if (destination === "explain options"){
+				if (destination === "explain options") {
 					readPossibleOptions();
 					return;
 				}
