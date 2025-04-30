@@ -179,6 +179,7 @@ export const POSSIBLE_EXTENSION_ACTIONS = [
 	"volume mute",
 	"volume [0-9]{1,3}",
 	"toggletranscript",
+	"explain options",
 ];
 
 export {
