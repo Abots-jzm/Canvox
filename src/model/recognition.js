@@ -38,10 +38,10 @@ function initRecognition(recognitionState, deviceId = null) {
 		// We want to wait a bit before sending the transcript to actions to avoid flooding it with too many calls
 		// This debounce mechanism ensures that we only call actions once the user has paused speaking
 		clearTimeout(window.debounceTimer);
-		window.debounceTimer = setTimeout(() => {
+		window.debounceTimer = setTimeout(async () => {
 			// IMPORTANT: This is where we call pass control to the actions.js script
 			// to handle the speech commands. The actions function should be defined in actions.js.
-			routeActions(transcript, recognitionState);
+			await routeActions(transcript, recognitionState);
 		}, 1000);
 	};
 
