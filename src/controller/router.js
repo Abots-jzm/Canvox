@@ -5,8 +5,11 @@ import { sidebarActionsRouter } from "../model/sidebar.js";
 import { wasATextAction } from "../model/text.js";
 import { narratePage } from "../model/tts.js";
 import { wasAnInboxAction } from "./inbox.js";
+import { wasALoginAction } from "./login.js";
 
 function routeActions(transcript, recognitionState) {
+	if (wasALoginAction(transcript)) return;
+
 	//check for text actions first
 	if (wasATextAction(transcript)) return;
 
