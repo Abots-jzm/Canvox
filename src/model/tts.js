@@ -1,9 +1,9 @@
 import { playAudio } from "../controller/injectElements.js";
-import { playAudioFeedback } from "../controller/events.js";
+import { playAudioFeedback } from "../controller/events.js"; // Import the function
 
-// Remove the internal playLoadingAudio function and use the shared one
-function playLoadingAudio() {
-    return playAudioFeedback("loading.mp3");
+// Replace your playLoadingAudio function with this
+async function playLoadingAudio() {
+    return await playAudioFeedback("loading.mp3");
 }
 
 // Check for navigation confirmation messages
@@ -22,7 +22,7 @@ async function giveNavigationFeedback(recognitionState) {
 					const volume = parseInt(data.volume) / 100;
 
 					// Start playing loading audio
-					const loadingAudio = playLoadingAudio();
+					const loadingAudio = await playLoadingAudio();
 
 					try {
 						const response = await fetch("https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/navigate", {
@@ -93,7 +93,7 @@ async function narratePage(transcript = "", recognitionState) {
 		const volume = parseInt(data.volume) / 100;
 
 		// Start playing loading audio
-		const loadingAudio = playLoadingAudio();
+		const loadingAudio = await playLoadingAudio();
 
 		// Make a direct call to the narration API endpoint
 		const response = await fetch(
@@ -162,7 +162,7 @@ async function textToSpeech(narrateContent, recognitionState) {
 		const volume = parseInt(data.volume) / 100;
 
 		// Start playing loading audio
-		const loadingAudio = playLoadingAudio();
+		const loadingAudio = await playLoadingAudio();
 
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",

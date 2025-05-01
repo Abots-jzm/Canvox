@@ -6,24 +6,27 @@ import { assignMessages } from "./inbox.js";
 import { stopAudio, toggleTranscript } from "./injectElements.js";
 import { routeActions } from "./router.js";
 
-// Update the playAudioFeedback function to respect the volume setting
+// Add a function to play audio feedback
 async function playAudioFeedback(audioFile) {
-	try {
-		// Get the feedback volume setting
-		const data = await chrome.storage.sync.get("feedbackVolume");
-		const volume = data.feedbackVolume !== undefined ? parseInt(data.feedbackVolume) / 100 : 1.0;
-
-		const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
-		audio.volume = volume; // Apply the volume setting
-		audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
-		return audio;
-	} catch (error) {
-		console.error(`Error in playAudioFeedback:`, error);
-		// Fallback to default playback if there's an error
-		const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
-		audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
-		return audio;
-	}
+    try {
+        // Check if feedback sounds are enabled
+        const data = await chrome.storage.sync.get("feedbackSoundsEnabled");
+        const feedbackSoundsEnabled = data.feedbackSoundsEnabled !== undefined ? data.feedbackSoundsEnabled : true;
+        
+        // Only play if sounds are enabled
+        if (feedbackSoundsEnabled) {
+            const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
+            audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
+            return audio;
+        }
+        return null;
+    } catch (error) {
+        console.warn(`Error checking feedback sounds setting:`, error);
+        // Fallback to default behavior if there's an error
+        const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
+        audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
+        return audio;
+    }
 }
 
 function setupListeners(recognitionState) {

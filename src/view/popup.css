@@ -87,13 +87,6 @@ select {
 	margin-left: 18px;
 }
 
-.feedbackVolumeSlider {
-	display: flex;
-	flex-direction: column;
-	margin-right: 50px;
-	margin-left: 18px;
-}
-
 .audioOutput {
 	display: flex;
 	flex-direction: column;
