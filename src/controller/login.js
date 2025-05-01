@@ -1,6 +1,6 @@
-import { tts } from "../model/tts.js";
+import { textToSpeech } from "../model/tts.js";
 
-function isOnLoginPage() {
+function onLoginPage() {
 	const path = window.location.pathname;
 	return path.includes("/login") || path.includes("/login/") || path.includes("/login?") || path.includes("/login#");
 }
@@ -18,7 +18,7 @@ async function useLoginGPT(transcript) {
 	return data;
 }
 
-function insertLoginDetails(userDetails) {
+function insertLoginDetails(userDetails, recognitionState) {
 	if (!userDetails) return;
 
 	const usernameField = document.querySelector("#pseudonym_session_unique_id");
@@ -31,26 +31,39 @@ function insertLoginDetails(userDetails) {
 	if (passwordField && userDetails.password) {
 		passwordField.value = userDetails.password;
 	}
+
+	if (userDetails.username && userDetails.password) {
+		textToSpeech("Your username and password has been entered", recognitionState);
+	} else if (userDetails.username) {
+		textToSpeech("Your username has been entered", recognitionState);
+	} else if (userDetails.password) {
+		textToSpeech("Your password has been entered", recognitionState);
+	} else {
+		textToSpeech("I couldn't find any login credentials in what you said", recognitionState);
+	}
 }
 
-function wasALoginAction(transcript) {
+async function wasALoginAction(transcript, recognitionState) {
 	if (!onLoginPage()) return false;
 
-	const response = useLoginGPT(transcript);
+	const response = await useLoginGPT(transcript);
+	console.log(response);
 	if (!response) return false;
 
 	if (response === "submit") {
 		const loginButton = document.querySelector(".Button--login");
 		if (loginButton) {
 			loginButton.click();
+			textToSpeech("Logging you in", recognitionState);
 		}
 	} else if (response === "persist") {
 		const rememberMeCheckbox = document.querySelector("#pseudonym_session_remember_me");
 		if (rememberMeCheckbox) {
 			rememberMeCheckbox.checked = !rememberMeCheckbox.checked;
+			textToSpeech("Toggled stay signed in checkbox", recognitionState);
 		}
 	} else if (response.username || response.password) {
-		insertLoginDetails(response);
+		insertLoginDetails(response, recognitionState);
 	} else {
 		return false;
 	}

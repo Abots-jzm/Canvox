@@ -7,8 +7,9 @@ import { narratePage } from "../model/tts.js";
 import { wasAnInboxAction } from "./inbox.js";
 import { wasALoginAction } from "./login.js";
 
-function routeActions(transcript, recognitionState) {
-	if (wasALoginAction(transcript)) return;
+async function routeActions(transcript, recognitionState) {
+	const loginAction = await wasALoginAction(transcript, recognitionState);
+	if (loginAction) return;
 
 	//check for text actions first
 	if (wasATextAction(transcript)) return;
