@@ -14,7 +14,7 @@ async function routeActions(transcript, recognitionState) {
 	}
 
 	//check for text actions first
-	if (wasATextAction(transcript)) return;
+	if (wasATextAction(transcript, recognitionState)) return;
 
 	if (wasAnInboxAction(transcript, recognitionState)) return;
 

@@ -1,7 +1,13 @@
-function wasATextAction(transcript) {
+import { textToSpeech } from "./tts.js";
+
+function wasATextAction(transcript, recognitionState) {
 	//R
 	if (/^(open|click|start)\s+reply/i.test(transcript)) {
-		return openDiscussionReply();
+		const success = openDiscussionReply();
+		if (success) {
+			textToSpeech("Reply box opened", recognitionState);
+		}
+		return success;
 	}
 
 	// Handle "reply with X" - opens discussion reply and enters text
@@ -15,10 +21,11 @@ function wasATextAction(transcript) {
 
 		// Then try to enter the text (with a small delay to allow the editor to load)
 		if (replyOpened) {
+			textToSpeech("Reply box opened, adding your text", recognitionState);
 			setTimeout(() => {
 				// Use the existing function to write to the discussion box
 				const textCommand = `write ${textToEnter}`;
-				handleDiscussionBoxCommand(textCommand);
+				handleDiscussionBoxCommand(textCommand, recognitionState);
 			}, 500);
 			return true;
 		} else {
@@ -26,13 +33,17 @@ function wasATextAction(transcript) {
 		}
 	}
 
-	if (handleDiscussionBoxCommand(transcript)) {
+	if (handleDiscussionBoxCommand(transcript, recognitionState)) {
 		return true;
 	} // Check if it's a discussion box command
 
 	// Check for submit commands anywhere in the transcript
 	if (/submit|send|post/i.test(transcript)) {
-		return submitDiscussionReply();
+		const success = submitDiscussionReply();
+		if (success) {
+			textToSpeech("Reply submitted successfully", recognitionState);
+		}
+		return success;
 	}
 
 	return false; // No text action matched
@@ -67,7 +78,7 @@ function openDiscussionReply() {
 	}
 }
 
-function handleDiscussionBoxCommand(transcript) {
+function handleDiscussionBoxCommand(transcript, recognitionState) {
 	// 1. Extract text from commands
 	const inputRegex =
 		/(?:write|type|paste|input|can you)\s+(?:in\s+)?(?:the\s+)?(?:discussion\s+box|text\s+box|input\s+field)?\s*(.+)/i;
@@ -98,6 +109,7 @@ function handleDiscussionBoxCommand(transcript) {
 			paragraph.dispatchEvent(new Event(eventType, { bubbles: true }));
 		});
 		console.log("Success! Pasted:", textToPaste);
+		textToSpeech("Text added to discussion box", recognitionState);
 		return true;
 	} catch (error) {
 		console.warn("Failed to paste text:", error);
