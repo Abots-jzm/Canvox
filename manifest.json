@@ -27,6 +27,10 @@
 		{
 			"resources": ["src/**/*.js"],
 			"matches": ["<all_urls>"]
+		},
+		{
+			"resources": ["audios/*.mp3"],
+			"matches": ["<all_urls>"]
 		}
 	]
 }

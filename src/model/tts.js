@@ -1,4 +1,10 @@
 import { playAudio } from "../controller/injectElements.js";
+import { playAudioFeedback } from "../controller/events.js"; // Import the function
+
+// Replace your playLoadingAudio function with this
+async function playLoadingAudio() {
+	return await playAudioFeedback("loading.mp3");
+}
 
 // Check for navigation confirmation messages
 async function giveNavigationFeedback(recognitionState) {
@@ -14,6 +20,9 @@ async function giveNavigationFeedback(recognitionState) {
 					// Get the volume setting
 					const data = await chrome.storage.sync.get("volume");
 					const volume = parseInt(data.volume) / 100;
+
+					// Start playing loading audio
+					const loadingAudio = await playLoadingAudio();
 
 					try {
 						const response = await fetch("https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/navigate", {
@@ -33,6 +42,10 @@ async function giveNavigationFeedback(recognitionState) {
 						const audioBlob = await response.blob();
 						const audioUrl = URL.createObjectURL(audioBlob);
 
+						// Stop loading audio
+						loadingAudio.pause();
+						loadingAudio.currentTime = 0;
+
 						// Use the shared audio element to play
 						const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
@@ -43,6 +56,9 @@ async function giveNavigationFeedback(recognitionState) {
 						document.dispatchEvent(navEvent);
 					} catch (error) {
 						console.warn("Error processing navigation message:", error);
+						// Stop loading audio on error too
+						loadingAudio.pause();
+						loadingAudio.currentTime = 0;
 					}
 				}, 500);
 			}
@@ -76,6 +92,9 @@ async function narratePage(transcript = "", recognitionState) {
 		const data = await chrome.storage.sync.get("volume");
 		const volume = parseInt(data.volume) / 100;
 
+		// Start playing loading audio
+		const loadingAudio = await playLoadingAudio();
+
 		// Make a direct call to the narration API endpoint
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/narrate",
@@ -100,6 +119,10 @@ async function narratePage(transcript = "", recognitionState) {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
+		// Stop loading audio
+		loadingAudio.pause();
+		loadingAudio.currentTime = 0;
+
 		// Use the shared audio element to play
 		const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
@@ -110,6 +133,13 @@ async function narratePage(transcript = "", recognitionState) {
 		return true;
 	} catch (error) {
 		console.warn("Error in narratePage function:", error);
+
+		// Make sure loading audio stops if there was an error
+		if (window.currentLoadingAudio) {
+			window.currentLoadingAudio.pause();
+			window.currentLoadingAudio.currentTime = 0;
+		}
+
 		return false;
 	}
 }
@@ -131,6 +161,9 @@ async function textToSpeech(narrateContent, recognitionState) {
 		const data = await chrome.storage.sync.get("volume");
 		const volume = parseInt(data.volume) / 100;
 
+		// Start playing loading audio
+		const loadingAudio = await playLoadingAudio();
+
 		const response = await fetch(
 			"https://glacial-sea-18791-40c840bc91e9.herokuapp.com/api/tts",
 			// Uncomment the line below, and comment the line above to test locally
@@ -150,6 +183,10 @@ async function textToSpeech(narrateContent, recognitionState) {
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 
+		// Stop loading audio
+		loadingAudio.pause();
+		loadingAudio.currentTime = 0;
+
 		// Use the shared audio element to play
 		const audioElement = await playAudio(audioUrl, volume, recognitionState);
 
@@ -158,6 +195,12 @@ async function textToSpeech(narrateContent, recognitionState) {
 		document.dispatchEvent(ttsEvent);
 	} catch (error) {
 		console.error("Error in textToSpeech function:", error);
+
+		// Make sure loading audio stops if there was an error
+		if (window.currentLoadingAudio) {
+			window.currentLoadingAudio.pause();
+			window.currentLoadingAudio.currentTime = 0;
+		}
 	}
 }
 

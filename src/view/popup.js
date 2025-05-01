@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const audioInput = document.getElementById("audioInput");
 	const audioOutput = document.getElementById("audioOutput");
 	const volumeSlider = document.getElementById("volumeAdjust");
+	const feedbackSoundsToggle = document.getElementById("feedbackSoundsToggle"); // Add this line
 
 	// Default settings (fallback in case defaults.js hasn't loaded)
 	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
@@ -20,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		audioInput: "default",
 		audioOutput: "default",
 		volume: 100,
+		feedbackSoundsEnabled: true, // Add this line
 	};
 
 	// Helper function to get settings with defaults
@@ -401,4 +403,18 @@ document.addEventListener("DOMContentLoaded", () => {
 	getSettingWithDefault("volume", DEFAULT_SETTINGS.volume).then((vol) => {
 		volumeSlider.value = vol;
 	});
+
+	// Add event listener for feedback sounds toggle
+	if (feedbackSoundsToggle) {
+		feedbackSoundsToggle.addEventListener("change", () => {
+			chrome.storage.sync.set({ feedbackSoundsEnabled: feedbackSoundsToggle.checked }, () => {
+				console.log("Feedback sounds " + (feedbackSoundsToggle.checked ? "enabled" : "disabled"));
+			});
+		});
+
+		// Load the feedback sounds setting from storage
+		getSettingWithDefault("feedbackSoundsEnabled", DEFAULT_SETTINGS.feedbackSoundsEnabled).then((enabled) => {
+			feedbackSoundsToggle.checked = enabled;
+		});
+	}
 });

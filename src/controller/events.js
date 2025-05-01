@@ -6,6 +6,29 @@ import { assignMessages } from "./inbox.js";
 import { stopAudio, toggleTranscript } from "./injectElements.js";
 import { routeActions } from "./router.js";
 
+// Add a function to play audio feedback
+async function playAudioFeedback(audioFile) {
+	try {
+		// Check if feedback sounds are enabled
+		const data = await chrome.storage.sync.get("feedbackSoundsEnabled");
+		const feedbackSoundsEnabled = data.feedbackSoundsEnabled !== undefined ? data.feedbackSoundsEnabled : true;
+
+		// Only play if sounds are enabled
+		if (feedbackSoundsEnabled) {
+			const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
+			audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
+			return audio;
+		}
+		return null;
+	} catch (error) {
+		console.warn(`Error checking feedback sounds setting:`, error);
+		// Fallback to default behavior if there's an error
+		const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
+		audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
+		return audio;
+	}
+}
+
 function setupListeners(recognitionState) {
 	runAnnouncements(recognitionState);
 
@@ -26,9 +49,14 @@ function setupListeners(recognitionState) {
 		// Microphone hotkey
 		const hotkey = await getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone);
 		if (isHotkeyMatch(e, hotkey)) {
-			// Stop audio if microphone is activated
+			// Check if we're turning the mic on or off
 			if (!recognitionState.isRecognizing) {
 				stopAudio();
+				// Play mic_on.mp3 when activating microphone
+				playAudioFeedback("mic_on.mp3");
+			} else {
+				// Play mic_off.mp3 when deactivating microphone
+				playAudioFeedback("mic_off.mp3");
 			}
 			toggleMicrophone(recognitionState);
 			e.preventDefault(); // Prevent browser's default handling of this key
@@ -78,6 +106,8 @@ function setupListeners(recognitionState) {
 			if (changes.microphoneActive.newValue === true && !recognitionState.isRecognizing) {
 				// Stop audio playback when turning microphone on
 				stopAudio();
+				// Play mic_on.mp3 when activating microphone
+				playAudioFeedback("mic_on.mp3");
 
 				if (!recognitionState.recognition) {
 					const deviceId = await getSettingWithDefault("audioInput", DEFAULT_SETTINGS.audioInput);
@@ -89,6 +119,8 @@ function setupListeners(recognitionState) {
 					recognitionState.isRecognizing = true;
 				}
 			} else if (changes.microphoneActive.newValue === false && recognitionState.isRecognizing) {
+				// Play mic_off.mp3 when deactivating microphone
+				playAudioFeedback("mic_off.mp3");
 				recognitionState.recognition.stop();
 				recognitionState.isRecognizing = false;
 			}
@@ -144,4 +176,4 @@ function checkAndAssignMessages() {
 	}
 }
 
-export { setupListeners };
+export { setupListeners, playAudioFeedback };
