@@ -49,7 +49,7 @@ function setupListeners(recognitionState) {
 		// Microphone hotkey
 		const hotkey = await getSettingWithDefault("hotkeyMicrophone", DEFAULT_SETTINGS.hotkeyMicrophone);
 		if (isHotkeyMatch(e, hotkey)) {
-			 // Check if we're turning the mic on or off
+			// Check if we're turning the mic on or off
 			if (!recognitionState.isRecognizing) {
 				stopAudio();
 				// Play mic_on.mp3 when activating microphone
