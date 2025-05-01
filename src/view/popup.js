@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const audioInput = document.getElementById("audioInput");
 	const audioOutput = document.getElementById("audioOutput");
 	const volumeSlider = document.getElementById("volumeAdjust");
+	const feedbackVolumeSlider = document.getElementById("feedbackVolumeAdjust");
 
 	// Default settings (fallback in case defaults.js hasn't loaded)
 	const DEFAULT_SETTINGS = window.DEFAULT_SETTINGS || {
@@ -20,7 +21,25 @@ document.addEventListener("DOMContentLoaded", () => {
 		audioInput: "default",
 		audioOutput: "default",
 		volume: 100,
+		feedbackVolume: 100,
 	};
+
+	if (!window.DEFAULT_SETTINGS) {
+		window.DEFAULT_SETTINGS = {
+			theme: "dark",
+			hotkeyMicrophone: { ctrl: false, alt: false, shift: false, key: "x" },
+			hotkeyTranscript: { ctrl: true, alt: false, shift: false, key: " " }, // Ctrl + Space
+			hotkeyReadoutDown: { ctrl: false, alt: false, shift: false, key: "Down" },
+			hotkeyReadoutUp: { ctrl: false, alt: false, shift: false, key: "Up" },
+			microphoneActive: false,
+			audioInput: "default",
+			audioOutput: "default",
+			volume: 100,
+			feedbackVolume: 100,
+		};
+	} else {
+		window.DEFAULT_SETTINGS.feedbackVolume = 100;
+	}
 
 	// Helper function to get settings with defaults
 	function getSettingWithDefault(key, defaultValue) {
@@ -400,5 +419,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Load Volume Settings with default
 	getSettingWithDefault("volume", DEFAULT_SETTINGS.volume).then((vol) => {
 		volumeSlider.value = vol;
+	});
+
+	// Feedback volume slider
+	feedbackVolumeSlider.addEventListener("input", () => {
+		chrome.storage.sync.set({ feedbackVolume: feedbackVolumeSlider.value }, () => {
+			console.log("Feedback Volume Set:", feedbackVolumeSlider.value);
+		});
+	});
+
+	// Load Feedback Volume Settings with default
+	getSettingWithDefault("feedbackVolume", DEFAULT_SETTINGS.feedbackVolume).then((vol) => {
+		feedbackVolumeSlider.value = vol;
 	});
 });

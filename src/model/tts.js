@@ -1,11 +1,9 @@
 import { playAudio } from "../controller/injectElements.js";
+import { playAudioFeedback } from "../controller/events.js";
 
-// Add this helper function to play loading audio
+// Remove the internal playLoadingAudio function and use the shared one
 function playLoadingAudio() {
-	const loadingAudio = new Audio(chrome.runtime.getURL("audios/loading.mp3"));
-	loadingAudio.loop = true;
-	loadingAudio.play().catch((error) => console.error("Error playing loading audio:", error));
-	return loadingAudio;
+    return playAudioFeedback("loading.mp3");
 }
 
 // Check for navigation confirmation messages
