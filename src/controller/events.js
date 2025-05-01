@@ -116,9 +116,9 @@ function setupListeners(recognitionState) {
 	});
 
 	// This is for users who may not want to use the microphone or have accessibility needs
-	document.querySelector(".voice-input").addEventListener("keydown", (e) => {
+	document.querySelector(".voice-input").addEventListener("keydown", async (e) => {
 		if (e.key === "Enter") {
-			routeActions(e.target.value);
+			await routeActions(e.target.value);
 			e.target.value = ""; // Clear the input after processing
 		}
 	});

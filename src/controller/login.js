@@ -43,7 +43,7 @@ function insertLoginDetails(userDetails, recognitionState) {
 	}
 }
 
-async function wasALoginAction(transcript, recognitionState) {
+async function loginPageAction(transcript, recognitionState) {
 	if (!onLoginPage()) return false;
 
 	const response = await useLoginGPT(transcript);
@@ -54,7 +54,13 @@ async function wasALoginAction(transcript, recognitionState) {
 		const loginButton = document.querySelector(".Button--login");
 		if (loginButton) {
 			loginButton.click();
-			textToSpeech("Logging you in", recognitionState);
+			sessionStorage.setItem(
+				"canvoxNavigation",
+				JSON.stringify({
+					message: "Successfully logged in to your account. You are now on the Canvas dashboard.",
+					timestamp: Date.now(),
+				}),
+			);
 		}
 	} else if (response === "persist") {
 		const rememberMeCheckbox = document.querySelector("#pseudonym_session_remember_me");
@@ -71,4 +77,4 @@ async function wasALoginAction(transcript, recognitionState) {
 	return true;
 }
 
-export { wasALoginAction };
+export { loginPageAction, onLoginPage };

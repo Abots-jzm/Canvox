@@ -1,7 +1,7 @@
 import { collectUniqueDestinations, navigate, readPossibleOptions } from "./navigation.js";
 import { POSSIBLE_EXTENSION_ACTIONS } from "./settings.js";
 import { POSSIBLE_SIDEBAR_DESTINATIONS, sidebarActionsRouter } from "./sidebar.js";
-import { textToSpeech } from "./tts.js";
+import { narratePage, textToSpeech } from "./tts.js";
 import { extensionActionRouter } from "./settings.js";
 import { clickMessage, messageObjects } from "../controller/inbox.js";
 
@@ -65,7 +65,8 @@ async function useGPT(transcript, recognitionState) {
 
 			// Check if destination is a narration request
 			if (destination === "narrate") {
-				textToSpeech("Calling text to speech from use GPT.", recognitionState);
+				narratePage(transcript, recognitionState);
+				// textToSpeech("Calling text to speech from use GPT.", recognitionState);
 			} else if (destination.includes("message")) {
 				clickMessage(destination, recognitionState);
 			} else {
