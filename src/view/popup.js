@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		audioInput: "default",
 		audioOutput: "default",
 		volume: 100,
-		feedbackSoundsEnabled: true // Add this line
+		feedbackSoundsEnabled: true, // Add this line
 	};
 
 	// Helper function to get settings with defaults

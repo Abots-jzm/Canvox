@@ -3,7 +3,7 @@ import { playAudioFeedback } from "../controller/events.js"; // Import the funct
 
 // Replace your playLoadingAudio function with this
 async function playLoadingAudio() {
-    return await playAudioFeedback("loading.mp3");
+	return await playAudioFeedback("loading.mp3");
 }
 
 // Check for navigation confirmation messages

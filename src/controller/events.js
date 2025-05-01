@@ -8,25 +8,25 @@ import { routeActions } from "./router.js";
 
 // Add a function to play audio feedback
 async function playAudioFeedback(audioFile) {
-    try {
-        // Check if feedback sounds are enabled
-        const data = await chrome.storage.sync.get("feedbackSoundsEnabled");
-        const feedbackSoundsEnabled = data.feedbackSoundsEnabled !== undefined ? data.feedbackSoundsEnabled : true;
-        
-        // Only play if sounds are enabled
-        if (feedbackSoundsEnabled) {
-            const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
-            audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
-            return audio;
-        }
-        return null;
-    } catch (error) {
-        console.warn(`Error checking feedback sounds setting:`, error);
-        // Fallback to default behavior if there's an error
-        const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
-        audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
-        return audio;
-    }
+	try {
+		// Check if feedback sounds are enabled
+		const data = await chrome.storage.sync.get("feedbackSoundsEnabled");
+		const feedbackSoundsEnabled = data.feedbackSoundsEnabled !== undefined ? data.feedbackSoundsEnabled : true;
+
+		// Only play if sounds are enabled
+		if (feedbackSoundsEnabled) {
+			const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
+			audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
+			return audio;
+		}
+		return null;
+	} catch (error) {
+		console.warn(`Error checking feedback sounds setting:`, error);
+		// Fallback to default behavior if there's an error
+		const audio = new Audio(chrome.runtime.getURL(`audios/${audioFile}`));
+		audio.play().catch((error) => console.error(`Error playing ${audioFile}:`, error));
+		return audio;
+	}
 }
 
 function setupListeners(recognitionState) {
